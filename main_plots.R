@@ -16,7 +16,7 @@ density_plot <- ggplot2::ggplot(data_toghether,
   ggplot2::theme(strip.placement = "outside",
         strip.background = element_blank())#+gganimate::ease_aes('linear')
 ggplot2::ggsave(density_plot, 
-                filename=paste0("images/", score_name, "density_", type, ".pdf"), 
+                filename=paste0("images/", score_name, n, "/", "density_", type, ".pdf"), 
                 width = 10, height = 8)
 
 if(synthetic_scenario){
@@ -30,7 +30,7 @@ if(synthetic_scenario){
 
 # # remove for GIF
 # gganimate::anim_save(
-#   paste0("images/experts/", folder, "margin/density_", type, ".gif"),
+#   paste0("images/experts/", folder, "margin/, n, "/", density_", type, ".gif"),
 #   animate(density_plot, fps = 5, width = 800, height = 600, renderer = gifski_renderer())
 # )
 ecdf_plot <- ggplot2::ggplot(data_toghether,
@@ -53,7 +53,7 @@ if(synthetic_scenario){
 }
 
 ggplot2::ggsave(ecdf_plot, 
-                filename=paste0("images/",score_name,"ecdf_",type,".pdf"), 
+                filename=paste0("images/",score_name, n, "/","ecdf_",type,".pdf"), 
                 width = 10, height = 8)
 
 
@@ -210,7 +210,7 @@ if(synthetic_scenario){
 }
 
 saveRDS(object = results, file = paste0("experts_pred/", score_name, 
-                                        "plot_results_", type, ".rds"))
+                                        "plot_results_", type, "_", n, ".rds"))
 
 results <- readRDS(paste0("experts_pred/", score_name, 
                           "plot_results_", type, ".rds"))
@@ -360,7 +360,7 @@ spv_lines <- ggplot2::ggplot(spv_means,
 
 spv_plot <- gridExtra::grid.arrange(spv_boxplot, spv_lines, ncol=2)
 ggplot2::ggsave(spv_plot, 
-                filename=paste0("images/", score_name,"spv_plot_",type,".pdf"), 
+                filename=paste0("images/", score_name,  n, "/","spv_plot_",type,".pdf"), 
                 width = 30, height = 15)
 
 mean_width_data <- dplyr::bind_rows(
@@ -422,7 +422,7 @@ if(synthetic_scenario){
     ggplot2::theme_minimal()
   cov_width_plot <- gridExtra::grid.arrange(cov_plot, mean_width_plot, ncol=2)
   ggplot2::ggsave(cov_width_plot, 
-                  filename=paste0("images/", score_name, "/coverage-width_boxplots_", type, ".pdf"), 
+                  filename=paste0("images/", score_name, n, "/", "/coverage-width_boxplots_", type, ".pdf"), 
                   width = 30, height = 15)
   
   
@@ -458,7 +458,7 @@ if(synthetic_scenario){
       color = "Random Rate") +
     ggplot2::theme_minimal(base_size = 14)
   
-  ggplot2::ggsave(cov_factor_plot, filename=paste0("images/",score_name,"coverage_factor_plot_",type,".pdf"), width = 10, height = 8)
+  ggplot2::ggsave(cov_factor_plot, filename=paste0("images/",score_name, n, "/","coverage_factor_plot_",type,".pdf"), width = 10, height = 8)
   
   
   all_data <- dplyr::left_join(spv_means, cov_means, 
@@ -482,7 +482,7 @@ if(synthetic_scenario){
   
 }else{
   ggplot2::ggsave(mean_width_plot, 
-                  filename=paste0("images/", score_name, "width_boxplots_", type, ".pdf"), 
+                  filename=paste0("images/", score_name, n,"/", "width_boxplots_", type, ".pdf"), 
                   width = 30, height = 15)
 }
 

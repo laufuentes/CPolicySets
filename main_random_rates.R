@@ -80,24 +80,24 @@ if(synthetic_scenario){
             }))
 }
 
-data_true_all <- dplyr::bind_rows(
-  data.frame(
-    value = as.vector(SL.out$true_score),
-    model = "Estimated score",
-    mechanism = c("Unweighted", "SL", "Exp")[1]
-  ),
-  data.frame(
-    value = as.vector(SL.out$true_score),
-    model = "Estimated score",
-    mechanism = c("Unweighted", "SL", "Exp")[2]
-  ),
-  data.frame(
-    value = as.vector(SL.out$true_score),
-    model = "Estimated score",
-    mechanism = c("Unweighted", "SL", "Exp")[3]
-  ))
-
 if(synthetic_scenario){
+  data_true_all <- dplyr::bind_rows(
+    data.frame(
+      value = as.vector(SL.out$true_score),
+      model = "Estimated score",
+      mechanism = c("Unweighted", "SL", "Exp")[1]
+    ),
+    data.frame(
+      value = as.vector(SL.out$true_score),
+      model = "Estimated score",
+      mechanism = c("Unweighted", "SL", "Exp")[2]
+    ),
+    data.frame(
+      value = as.vector(SL.out$true_score),
+      model = "Estimated score",
+      mechanism = c("Unweighted", "SL", "Exp")[3]
+    ))
+  
   data_true_all <- dplyr::bind_rows(data_true_all, 
                              data.frame(
                                value = as.vector(SL.out$true_score_true),

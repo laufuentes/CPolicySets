@@ -76,26 +76,65 @@ mu_P0_simplex_complicated <- function(X){
 #' Generates a dataset simulating treatment assignment, covariates, and potential outcomes.
 #'
 #' @param n Number of observations to generate.
+#' @param ncov Number of covariates (2 by default).
 #' @param seed Integer or NA (NA by default).
 #' @param type String indicating the type of synthetic scenario ("normal", "complex")
+#' @param is_RCT Logical indicating if treatment allocated as in RCT (TRUE by default).
 #'
 #' @return A list containing two data frames (\code{df_obs} with observed outcomes 
 #' based on treatment and \code{df_complete} with all potential outcomes) and the 
 #' oracular optimal treatment assignments. 
 #' @examples
 #' n <- 1e3 
-#' generate_data(n)
+#' generate_data(n, type="normal")
 #' @export
-generate_data <- function(n, seed=NA, type=c("normal", "complex")){
+generate_data <- function(n, ncov=2, seed=NA, type=c("normal", "complex"), is_RCT= TRUE){
+  ncov <- R.utils::Arguments$getIntegers(ncov, c(2, 15))
+  type <- match.arg(type)
   if(!is.na(seed)){
     set.seed(seed)
   }
-  m <- 5
-  A <- t(stats::rmultinom(n, 1, rep(1/m, m)))
-  A_int <- max.col(A)        # integer 1..m
+  
+  treatment_levels <- 5 
+  X <- matrix(stats::rnorm(ncov*n), ncol=ncov)
+  if(is_RCT){
+    A <- t(stats::rmultinom(n, 1, rep(1/treatment_levels, treatment_levels)))
+  }else{
+    if(type=="normal"){
+      beta_high <- matrix(c(10,10,5,5,5), c(10,10,5,5,5), nrow=2, ncol=treatment_levels)
+      beta_low <- matrix(c(5,5,10,10,5), c(5,5,10,10,5), nrow=2, ncol=treatment_levels)
+      w <- 1/(1+exp(X[,1]+X[,2] - 0.5))
+      beta <- w*(X%*% beta_high) + (1-w)*(X%*%beta_low)
+      epsilon <- matrix(rnorm(nrow(X) * 5), nrow=n, ncol=5)
+      # Treatment assigment probabilities 
+      treatment_assignment <- beta + epsilon
+      probs <- plogis(treatment_assignment)
+      expit_treatment <- probs / rowSums(probs)
+      
+      A <- t(apply(expit_treatment, 1, function(p) rmultinom(1, 1, p)))
+    }else{
+      beta_high <- matrix(c(5,10,5,5,5), c(5,10,5,5,5), nrow=2, ncol=treatment_levels)
+      beta_medium <- matrix(c(10,5,5,10,10), c(10,5,5,10,10), nrow=2, ncol=treatment_levels)
+      beta_low <- matrix(c(5,5,10,5,5), c(5,5,10,5,5), nrow=2, ncol=treatment_levels)
+      w_low  <- 1 / (1 + exp(X[, 1] + X[, 2] - 0.25))
+      w_high <- 1 - (1 / (1 + exp(X[, 1] + X[, 2] - 0.75)))
+      w_medium <- pmax(0, 1 - (w_low + w_high)) 
+      total_w  <- w_low + w_medium + w_high
+      
+      beta <- w_high * (X %*% beta_high) + 
+        w_medium*(X %*% beta_medium) + 
+        w_low *(X %*% beta_low)
+      epsilon <- matrix(rnorm(nrow(X) * 5), nrow=n, ncol=5)
+      treatment_assignment <- beta + epsilon
+      probs <- plogis(treatment_assignment)
+      expit_treatment <- probs / rowSums(probs)
+      A <- t(apply(expit_treatment, 1, function(p) rmultinom(1, 1, p)))
+    }
+  }
+  A_int <- max.col(A)
   A_factor <- factor(A_int)
   stopifnot(all(rowSums(A) == 1))
-  X <- matrix(stats::rnorm(2*n), ncol=2)
+ 
   if(type=="complex"){
     potential_outcomes <- mu_P0_simplex_complicated(X)
   }else{

@@ -1,5 +1,5 @@
 # ── Set working directory  ──────────────────────────────────────────────────
-# setwd("~/Documents/PhD/Project 2 - Conformal Policy Sets /CPolicySets")
+setwd("~/Documents/PhD/Project 2 - Conformal Policy Sets /CPolicySets")
 
 # ── Required packages  ────────────────────────────────────────────────────────
 library(SL.ODTR)
@@ -41,15 +41,16 @@ random_rate <- seq(0,1,0.1) # random rates to test
 n_rate <- length(random_rate) # number of random rates to test 
 
 n_test <- 100 # number of repetitions for boxplots
-alphas <- seq(0,0.5,0.05) # number of confidence levels to test 
+alphas <- seq(0,1,0.05) # number of confidence levels to test 
 
 # ── Load data  ────────────────────────────────────────────────────────────────
 if(synthetic_scenario){
   # Synthetic data generation 
   
   ## Training observations 
-  n<- 1e4  # number of observations for training CP.
-  exp <- generate_data(n, type=type)  
+  n<- 6*1e3  # number of observations for training CP.
+  is_RCT <- FALSE
+  exp <- generate_data(n, type=type, is_RCT=is_RCT)  
   SL.out$df_obs <- exp[[1]] # extract observational data 
   df_complete <- exp[[2]] # extract complete data (unavailable in real scenarios)
   SL.out$optimal_policy <- exp[[3]] # extract optimal policy (unavailable in real scenarios)
@@ -307,5 +308,5 @@ if(synthetic_scenario){
 }
 
 source("main_random_rates.R")
-saveRDS(object = SL.out, file = paste0("experts_pred/",score_name,"_", type,".rds"))
+saveRDS(object = SL.out, file = paste0("experts_pred/",score_name,"_", type, "_",n,".rds"))
 source("main_plots.R")
