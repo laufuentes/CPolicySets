@@ -21,8 +21,12 @@
 #' make_q_model(q_func = "q_glm", action_name = "treatment")
 #' }
 make_q_model <- function(q_func, sl_library = NULL, action_name = "A", v_restricted = FALSE) {
-  formula_obj <- if(v_restricted){~ .} else{
-    stats::reformulate(paste0(action_name, " * ."))}
+  formula_obj <- if(v_restricted){formula_obj <- stats::reformulate(covariates)
+  } else{
+    formula_obj <- stats::as.formula(
+      paste("~", paste(covariates, collapse = " + "), "+", action_name, "+",
+            paste0(action_name, ":", covariates, collapse = " + "))
+    )}
   
   switch(q_func,
          "q_glm" = polle::q_glm(formula = formula_obj, family = gaussian()),
