@@ -6,6 +6,7 @@
 #'
 #' @param q_func String indicating the type of function for Q-learning. 
 #'  c("q_glm", "q_rf", "q_xgboost", and "q_sl").
+#' @param covariates Character vector of covariate names. Defaults to `c("x1", "x2")`.
 #' @param sl_library String vector of libraries for learning policies 
 #'   using SuperLearner. Required if q_func = "q_sl".
 #' @param action_name String indicating the treatment/action variable 
@@ -20,7 +21,7 @@
 #' \dontrun{
 #' make_q_model(q_func = "q_glm", action_name = "treatment")
 #' }
-make_q_model <- function(q_func, sl_library = NULL, action_name = "A", v_restricted = FALSE) {
+make_q_model <- function(q_func, covariates, sl_library = NULL, action_name = "A", v_restricted = FALSE) {
   formula_obj <- if(v_restricted){formula_obj <- stats::reformulate(covariates)
   } else{
     formula_obj <- stats::as.formula(

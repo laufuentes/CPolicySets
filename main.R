@@ -102,18 +102,18 @@ expert_technique <- "polle" # indicator of estimation procedure
 #### Define the library of experts (Q)
 if(expert_technique %in% c("polle", "mix")){
   q_learners <- list() %>%
-    add_qlearner("drql_lm",    type = "drql", q_func = "q_glm", action_name=treatment_name) %>%
-    add_qlearner("drql_rf",    type = "drql", q_func = "q_rf", action_name=treatment_name) %>%
-    add_qlearner("ql_lm",      type = "ql",   q_func = "q_glm", action_name=treatment_name) %>%
-    add_qlearner("ql_rf",      type = "ql",   q_func = "q_rf", action_name=treatment_name) %>%
-    add_qlearner("drql_xgb",   type = "drql", q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name) %>% 
-    add_qlearner("ql_xgb",     type = "ql",   q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name) %>%
-    add_qlearner("ql_ranger",  type = "ql",   q_func = "q_sl", sl_library = "SL.ranger", action_name=treatment_name) %>%
-    add_qlearner("ptl_xgb",    type = "ptl",  q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name) %>%
-    add_qlearner("ptl_lm",     type = "ptl",  q_func = "q_glm", action_name=treatment_name) %>%
-    add_qlearner("ptl_rf",     type = "ptl",  q_func = "q_rf", action_name=treatment_name) %>%
-    add_qlearner("policytree", type = "policytree", depth = 2, action_name=treatment_name) %>%
-    add_qlearner("hybrid_tree", type = "policytree", depth = 3, hybrid = TRUE, action_name=treatment_name)
+    add_qlearner("drql_lm",    type = "drql", q_func = "q_glm", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("drql_rf",    type = "drql", q_func = "q_rf", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ql_lm",      type = "ql",   q_func = "q_glm", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ql_rf",      type = "ql",   q_func = "q_rf", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("drql_xgb",   type = "drql", q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name, covariates=covariates_name) %>% 
+    add_qlearner("ql_xgb",     type = "ql",   q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ql_ranger",  type = "ql",   q_func = "q_sl", sl_library = "SL.ranger", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ptl_xgb",    type = "ptl",  q_func = "q_sl", sl_library = "SL.xgboost", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ptl_lm",     type = "ptl",  q_func = "q_glm", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("ptl_rf",     type = "ptl",  q_func = "q_rf", action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("policytree", type = "policytree", depth = 2, action_name=treatment_name, covariates=covariates_name) %>%
+    add_qlearner("hybrid_tree", type = "policytree", depth = 3, hybrid = TRUE, action_name=treatment_name, covariates=covariates_name)
   
   #### Define the propensity score learner (G)
   g_learner <- glearner(m, g_func = "g_rf", sl_library = NULL, num.trees = 500)  
