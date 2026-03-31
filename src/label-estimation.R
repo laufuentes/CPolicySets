@@ -272,7 +272,7 @@ expert_fit_predict <- function(train, test, new = NULL,
         cross_fit_g_models = FALSE)
       # policy optimization
       po <- l_obj(policy_data = pd_train, 
-                  q_models = list(learner$q_model), g_models = g_model)
+                  q_models = list(learner$qv_model), g_models = g_model)
       
     } else if (learner$type == "ptl") {
       # policy learner (tree-based)
