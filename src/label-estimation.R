@@ -11,8 +11,6 @@
 #'   using SuperLearner. Required if q_func = "q_sl".
 #' @param action_name String indicating the treatment/action variable 
 #'   name in the data frame. Defaults to "A".
-#' @param v_restricted Logical indicating whether to exclude the interaction 
-#'   between treatment and covariates in the formula.
 #'   
 #' @return An object of class q_model as defined by the polle package.
 #' @export
@@ -21,14 +19,8 @@
 #' \dontrun{
 #' make_q_model(q_func = "q_glm", action_name = "treatment")
 #' }
-make_q_model <- function(q_func, covariates=c("x1","x2"), sl_library = NULL, action_name = "A", v_restricted = FALSE) {
-  formula_obj <- if (v_restricted) {
-    stats::reformulate(covariates)
-  } else {
-    # Interaction terms with action only; polle adds the main action effect
-    stats::reformulate(c(covariates, paste0(action_name, ":", covariates)))
-  }
-  
+make_q_model <- function(q_func, covariates=c("x1","x2"), sl_library = NULL, action_name = "A") {
+  formula_obj <- stats::reformulate(covariates)
   switch(q_func,
          "q_glm" = polle::q_glm(formula = formula_obj, family = gaussian()),
          "q_rf" = polle::q_rf(formula = formula_obj),
@@ -85,13 +77,11 @@ add_qlearner <- function(learners, name,
     q_model  <- make_q_model(q_func,
                              covariates   = covariates,
                              sl_library   = sl_library,
-                             action_name  = action_name,
-                             v_restricted = FALSE)
+                             action_name  = action_name)
     qv_model <- make_q_model(q_func,
                              covariates   = covariates,
                              sl_library   = sl_library,
-                             action_name  = action_name,
-                             v_restricted = TRUE)
+                             action_name  = action_name)
   } else {
     q_model  <- NULL
     qv_model <- NULL
