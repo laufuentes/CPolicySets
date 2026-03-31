@@ -84,7 +84,7 @@ add_qlearner <- function(learners, name,
       stop("Unknown q_func '", q_func, "'. Choose from: ", paste(valid_q_funcs, collapse = ", "))
     q_model  <- make_q_model(q_func, sl_library, covariates=covariates,
                              action_name = action_name, v_restricted = FALSE)
-    qv_model <- make_q_model(q_func, sl_library, 
+    qv_model <- make_q_model(q_func, sl_library, covariates=covariates,
                              action_name = action_name, v_restricted = TRUE)
   } else {
     q_model  <- NULL
