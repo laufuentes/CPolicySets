@@ -73,7 +73,6 @@ if(synthetic_scenario){
 treatment<- matrix(0, nrow=nrow(rbind(train1, train2)), ncol=m)
 treatment[cbind(1:nrow(treatment), c(train1[, treatment_name],
                                      train2[, treatment_name]))] <- 1
-
 model <- grf::regression_forest(
   X = cbind(rbind(train1, train2)[, covariates_name], treatment),
   Y = rbind(train1, train2)[, outcome_name])
@@ -88,6 +87,7 @@ for(i in 1:length(alphas)){
     confidence_set <- split(idx[, "col"], 
                             factor(idx[, "row"], 
                                    levels = seq_len(nrow(binary_confidence_set))))
+    heatmap_treatments(confidence_set)
     
     mean_width[i,1,r]<- width(pred_set = confidence_set)
     spv[i,,1,r]<- bounds_set_policy_value(confidence_set, ab = ab,
@@ -526,3 +526,121 @@ if(synthetic_scenario){
                   filename=paste0("images/", score_name, "width_boxplots_", type, ".pdf"), 
                   width = 30, height = 15)
 }
+
+if(synthetic_scenario){
+  heatmaps_r <- array(0, dim=c(nrow(SL.out$df_new_sample), m, length(alphas),ncol(SL.out$rate_cal_labels_exp),5))
+}else{
+  heatmaps_r <- array(0, dim=c(nrow(SL.out$df_new_sample), m, length(alphas),ncol(SL.out$rate_cal_labels_exp),4))
+  
+}
+
+## train1 <- SL.out$df_obs[SL.out$folds[[1]],] # generate noisy labels 
+## train2 <-  SL.out$df_obs[SL.out$folds[[2]],] # score model and nuisances
+## test <-  SL.out$df_obs[SL.out$folds[[3]],] 
+
+treatment<- matrix(0, nrow=nrow(rbind(train1, train2)), ncol=m)
+treatment[cbind(1:nrow(treatment), c(train1[, treatment_name],
+                                     train2[, treatment_name]))] <- 1
+model <- grf::regression_forest(
+  X = cbind(rbind(train1, train2)[, covariates_name], treatment),
+  Y = rbind(train1, train2)[, outcome_name])
+for(i in 1:length(alphas)){
+  alpha <- alphas[i]
+  for (r in 1:ncol(SL.out$rate_cal_labels_exp)){
+    # unweighted
+    quant <- stats::quantile(SL.out$rate_scores_unweighted_cal[, r], (1-alpha))
+    binary_confidence_set <-  ifelse(SL.out$new_scores<quant, 1, 0)
+    idx <- which(binary_confidence_set  != 0, arr.ind = TRUE) 
+    confidence_set <- split(idx[, "col"], 
+                            factor(idx[, "row"], 
+                                   levels = seq_len(nrow(binary_confidence_set))))
+    
+    heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set) %>% as.matrix()
+    # SL 
+    w.quantile <- stats::quantile(SL.out$rate_scores_sl_cal[,r], (1-alpha))
+    w.binary_confidence_set <- ifelse(SL.out$new_scores<w.quantile, 1, 0)
+    w.idx <- which(w.binary_confidence_set  != 0, arr.ind = TRUE) 
+    w.confidence_set <- split(w.idx[, "col"], 
+                              factor(w.idx[, "row"], 
+                                     levels = seq_len(nrow(w.binary_confidence_set))))
+    
+    heatmaps_r[,,i,r,2] <- heatmap_treatments(w.confidence_set)%>% as.matrix()
+    # Exponential  
+    exp.quantile <- stats::quantile(SL.out$rate_scores_exp_cal[,r], (1-alpha))
+    exp.binary_confidence_set <- ifelse(SL.out$new_scores<exp.quantile, 1, 0)
+    exp.idx <- which(exp.binary_confidence_set != 0, arr.ind = TRUE) 
+    exp.confidence_set <- split(exp.idx[, "col"], 
+                                factor(exp.idx[, "row"], 
+                                       levels = seq_len(nrow(exp.binary_confidence_set))))
+    heatmaps_r[,,i,r,3] <- heatmap_treatments(exp.confidence_set)%>% as.matrix()
+    # uppest lower bound set 
+  lowers <- uppers <- lowers_test <- uppers_test <- matrix(0, nrow=nrow(SL.out$df_new), ncol=m)
+  z <- stats::qnorm(1 - alpha/2)
+  for (l in as.numeric(levels_A)){
+    treatment_l <- matrix(0, nrow=nrow(SL.out$df_new), ncol=m)
+    treatment_l[,l] <- 1
+    data_l <- data.frame(SL.out$df_new[,covariates_name], Treatment=treatment_l)
+    pred <- stats::predict(model, newdata = data_l, estimate.variance = TRUE)
+    se <- sqrt(pred$variance.estimates)
+    lowers[,l] <- pred$predictions - z * se
+    uppers[,l] <- pred$predictions + z * se
+  }
+  uppest_lrw_bound <- apply(lowers, 1, max)
+  C_set_binary_naive <- ifelse(uppers>=uppest_lrw_bound, 1, 0)
+  indices_naive <- which(C_set_binary_naive != 0, arr.ind = TRUE)
+  naive.confidence_set <- split(indices_naive[, "col"], 
+                                factor(indices_naive[, "row"],
+                                       levels = seq_len(nrow(C_set_binary_naive))))  
+  heatmaps_r[,,i,r,4] <- heatmap_treatments(naive.confidence_set)%>% as.matrix()
+  
+  if(synthetic_scenario){
+    # true 
+    true_quant <- stats::quantile(SL.out$true_score, (1-alpha))
+    true_binary_confidence_set <-  ifelse(SL.out$new_scores<true_quant, 1, 0)
+    true_idx <- which(true_binary_confidence_set  != 0, arr.ind = TRUE) 
+    true_confidence_set <- split(true_idx[, "col"], 
+                                 factor(true_idx[, "row"], 
+                                        levels = seq_len(nrow(true_binary_confidence_set))))
+    
+    heatmaps_r[,,i,r,5] <- heatmap_treatments(true_confidence_set)%>% as.matrix()
+  }
+  }
+  print(i)
+}
+
+names_experts <- c("unweighted", "SL", "Exp", "Naive")
+if(synthetic_scenario){
+  names_experts <- c(names_experts, "True")
+}
+
+for (t in 1:dim(heatmaps_r)[5]){
+  plots_completed <- list()
+  for (i in 1:dim(heatmaps_r)[3]){
+    plots <- list()
+    for (r in 1:dim(heatmaps_r)[4]){
+      file <- as.data.frame(heatmaps_r[,,i,r,t]) %>%
+        mutate(row_id = row_number()) %>%
+        pivot_longer(cols = -row_id, names_to = "column_m", values_to = "value")
+      plots[[r]] <- ggplot(file, aes(x = column_m, y = row_id, fill = factor(value))) +
+        geom_tile() +
+        theme_minimal() +
+        labs(title = paste0("r: ", random_rate[r]),
+             x = "Treatment (m)",
+             y = "Observations",
+             fill = "Present")
+    }
+    plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = dim(heatmaps_r)[4], top = paste0("Alpha = ", alphas[i]))
+  }
+  multi_page <- marrangeGrob(grobs = plots_completed, nrow = 1, ncol = 1)
+  if(synthetic_scenario){
+    ggplot2::ggsave(
+      filename = paste0("images/", score_name, n, "/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
+      multi_page, width = 30, height = 15)
+  } else {
+    ggplot2::ggsave(
+      filename = paste0("images/", score_name, "Heatmap_", names_experts[t], "_", type, ".pdf"),
+      multi_page, width = 30, height = 15)
+  }
+}
+
+
