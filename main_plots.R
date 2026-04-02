@@ -33,12 +33,12 @@ if(synthetic_scenario){
                           inherit.aes = FALSE, linewidth=1.2)
   
   ggplot2::ggsave(density_plot, 
-                  filename=paste0("images/",score_name, n, "/", "ecdf_",type,".pdf"), 
+                  filename=paste0("images/",score_name, n, "/", "density_",type,".pdf"), 
                   width = 10, height = 8)
 } 
 
 ggplot2::ggsave(density_plot, 
-                filename=paste0("images/",score_name,"ecdf_",type,".pdf"), 
+                filename=paste0("images/",score_name,"density_",type,".pdf"), 
                 width = 10, height = 8)
 
 # # remove for GIF
