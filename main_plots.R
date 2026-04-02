@@ -31,7 +31,15 @@ if(synthetic_scenario){
                           color = "aquamarine1",
                           linetype = "dashed",
                           inherit.aes = FALSE, linewidth=1.2)
+  
+  ggplot2::ggsave(density_plot, 
+                  filename=paste0("images/",score_name, n, "/", "ecdf_",type,".pdf"), 
+                  width = 10, height = 8)
 } 
+
+ggplot2::ggsave(density_plot, 
+                filename=paste0("images/",score_name,"ecdf_",type,".pdf"), 
+                width = 10, height = 8)
 
 # # remove for GIF
 # gganimate::anim_save(
@@ -58,11 +66,14 @@ if(synthetic_scenario){
     ggplot2::stat_ecdf(data = data_true_all, aes(x=value),
                        color = "aquamarine1",
                        linetype = "dashed", linewidth=1.2, geom = "step")
+  ggplot2::ggsave(ecdf_plot, 
+                  filename=paste0("images/",score_name, n, "/", "ecdf_",type,".pdf"), 
+                  width = 10, height = 8)
+}else{
+  ggplot2::ggsave(ecdf_plot, 
+                  filename=paste0("images/",score_name, "ecdf_",type,".pdf"), 
+                  width = 10, height = 8)
 }
-
-ggplot2::ggsave(ecdf_plot, 
-                filename=paste0("images/",score_name, "ecdf_",type,".pdf"), 
-                width = 10, height = 8)
 
 
 if(synthetic_scenario){
