@@ -108,7 +108,6 @@ for(i in 1:length(alphas)){
     confidence_set <- split(idx[, "col"], 
                             factor(idx[, "row"], 
                                    levels = seq_len(nrow(binary_confidence_set))))
-    heatmap_treatments(confidence_set)
     
     mean_width[i,1,r]<- width(pred_set = confidence_set)
     spv[i,,1,r]<- bounds_set_policy_value(confidence_set, ab = ab,
