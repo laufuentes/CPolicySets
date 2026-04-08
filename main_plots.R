@@ -699,15 +699,15 @@ for (i in seq_along(alphas)){
     true.quant <- stats::quantile(SL.out$true_score, (1-alpha))
     
     ru_true <- (quant -true.quant )/(quant - rd_quant)
-    rsl_true <- (sl.quant -true.quant )/(quant - rd_quant)
-    re_true <- (exp.quant -true.quant )/(quant - rd_quant)
+    rsl_true <- (sl.quant -true.quant )/(sl.quant - rd_quant)
+    re_true <- (exp.quant -true.quant )/(exp.quant - rd_quant)
     data_true_r[i,] <- c(ru_true, rsl_true, re_true)
   }
   
   Ftilde_quant <- stats::quantile(SL.out$rate_cal_labels_behavioral, (1-alpha)) 
   ru <- (quant -Ftilde_quant)/(quant - rd_quant)
-  rsl <- (sl.quant -Ftilde_quant )/(quant - rd_quant)
-  re <- (exp.quant -Ftilde_quant )/(quant - rd_quant)
+  rsl <- (sl.quant -Ftilde_quant )/(sl.quant - rd_quant)
+  re <- (exp.quant -Ftilde_quant )/(exp.quant - rd_quant)
   
   data_tilde_r[i,] <- c(ru, rsl, re)
 }
@@ -724,8 +724,7 @@ plot_ftilde <- ggplot(df_long, aes(x=level, y=values, color=name))+
   geom_line()+ 
   geom_hline(yintercept = 1, 
              color="red", 
-             linetype="dashed")+
-  ylim(c(-2,2))
+             linetype="dashed")
 
 
 if(synthetic_scenario){
@@ -741,8 +740,7 @@ if(synthetic_scenario){
     geom_line()+
     geom_hline(yintercept = 1, 
                           color="red", 
-                          linetype="dashed")+
-    ylim(c(-2,2))
+                          linetype="dashed")
   plot_r <- gridExtra::grid.arrange(plot_ftilde, plot_true, ncol=2)
   
   ggplot2::ggsave(
