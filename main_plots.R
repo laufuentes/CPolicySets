@@ -123,7 +123,7 @@ for(i in 1:length(alphas)){
                                           treatment_name = treatment_name,
                                           outcome_name = outcome_name,
                                           covariates = covariates_name,
-                                          mod_=SL.out$QAW.reg.train,
+                                          mod_y=SL.out$QAW.reg.train,
                                           mod_ps = SL.out$g.reg.train)
     coverage_A[i,r,1] <- coverage_relaxed(test[,treatment_name], pred_set = confidence_set)
     heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set, levels_A) %>% as.matrix()
@@ -142,7 +142,7 @@ for(i in 1:length(alphas)){
                                           treatment_name = treatment_name,
                                           outcome_name = outcome_name,
                                           covariates = covariates_name,
-                                          mod_=SL.out$QAW.reg.train,
+                                          mod_y=SL.out$QAW.reg.train,
                                           mod_ps = SL.out$g.reg.train)
     
     coverage_A[i,r,2] <- coverage_relaxed(test[,treatment_name], pred_set = w.confidence_set)
@@ -161,7 +161,7 @@ for(i in 1:length(alphas)){
                                           treatment_name = treatment_name,
                                           outcome_name = outcome_name,
                                           covariates = covariates_name,
-                                          mod_=SL.out$QAW.reg.train,
+                                          mod_y=SL.out$QAW.reg.train,
                                           mod_ps = SL.out$g.reg.train)
     coverage_A[i,r,3] <- coverage_relaxed(test[,treatment_name], pred_set = exp.confidence_set)
     heatmaps_r[,,i,r,3] <- heatmap_treatments(exp.confidence_set, levels_A) %>% as.matrix()
@@ -212,7 +212,7 @@ for(i in 1:length(alphas)){
                                        treatment_name = treatment_name,
                                        outcome_name = outcome_name,
                                        covariates = covariates_name,
-                                       mod_=SL.out$QAW.reg.train,
+                                       mod_y=SL.out$QAW.reg.train,
                                        mod_ps = SL.out$g.reg.train)
   coverage_A[i,r,4] <- coverage_relaxed(test[,treatment_name], pred_set = naive.confidence_set)
   heatmaps_r[,,i,r,4] <- heatmap_treatments(naive.confidence_set, levels_A) %>% as.matrix()
@@ -244,7 +244,7 @@ for(i in 1:length(alphas)){
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
                                          covariates = covariates_name,
-                                         mod_=SL.out$QAW.reg.train,
+                                         mod_y=SL.out$QAW.reg.train,
                                          mod_ps = SL.out$g.reg.train)
     
     coverage_A[i,r,5] <- coverage_relaxed(test[,treatment_name], pred_set = true_confidence_set)
@@ -315,7 +315,7 @@ unweighted_SPV <-bounds_set_policy_value(unweighted_set, ab = ab,
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
                                          covariates = covariates_name,
-                                         mod_=SL.out$QAW.reg.train,
+                                         mod_y=SL.out$QAW.reg.train,
                                          mod_ps = SL.out$g.reg.train)
 
 # SL SPV
@@ -331,7 +331,7 @@ sl_SPV <- bounds_set_policy_value(sl_set, ab = ab,
                                   treatment_name = treatment_name,
                                   outcome_name = outcome_name,
                                   covariates = covariates_name,
-                                  mod_=SL.out$QAW.reg.train,
+                                  mod_y=SL.out$QAW.reg.train,
                                   mod_ps = SL.out$g.reg.train)
 
 # Exp SPV
@@ -348,7 +348,7 @@ exp_SPV <- bounds_set_policy_value(exp_set, ab = ab,
                                    treatment_name = treatment_name,
                                    outcome_name = outcome_name,
                                    covariates = covariates_name,
-                                   mod_=SL.out$QAW.reg.train,
+                                   mod_y=SL.out$QAW.reg.train,
                                    mod_ps = SL.out$g.reg.train)
 
 
@@ -366,7 +366,7 @@ if(synthetic_scenario){
                                        treatment_name = treatment_name,
                                        outcome_name = outcome_name,
                                        covariates = covariates_name,
-                                       mod_=SL.out$QAW.reg.train,
+                                       mod_y=SL.out$QAW.reg.train,
                                        mod_ps = SL.out$g.reg.train)
   
   hline_labels <- data.frame(
