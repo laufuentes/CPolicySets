@@ -35,7 +35,7 @@ score_name <- "margin/" # type of non conformity score
 SL.out<- list() # list where results will be saved 
 VFolds <- 3 # folds to split data 
 synthetic_scenario <- TRUE # if synthetic data, FALSE otherwise  
-type <- "normal" # additional name for images (here: type of synthetic scenario)
+type <- "complex" # additional name for images (here: type of synthetic scenario)
 
 random_rate <- seq(0,1,0.1) # random rates to test 
 n_rate <- length(random_rate) # number of random rates to test 
@@ -48,8 +48,9 @@ if(synthetic_scenario){
   # Synthetic data generation 
   
   ## Training observations 
-  n<- 12*1e3  # number of observations for training CP.
+  n<- 6*1e3  # number of observations for training CP.
   is_RCT <- TRUE
+  ifelse(is_RCT==TRUE,"RCT/", "non_RCT/")
   exp <- generate_data(n, type=type, is_RCT=is_RCT)  
   SL.out$df_obs <- exp[[1]] # extract observational data 
   df_complete <- exp[[2]] # extract complete data (unavailable in real scenarios)
@@ -308,5 +309,11 @@ if(synthetic_scenario){
 }
 
 source("main_random_rates.R")
-saveRDS(object = SL.out, file = paste0("experts_pred/",score_name,"_", type, "_",n,".rds"))
+if(synthetic_scenario){
+  saveRDS(object = SL.out, file = paste0("experts_pred/",score_name, RCT_file,"_", type, "_",n,".rds"))
+  
+}else{
+  saveRDS(object = SL.out, file = paste0("experts_pred/",score_name,"_", type, "_",n,".rds"))
+  
+}
 source("main_plots.R")

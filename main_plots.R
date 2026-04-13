@@ -1,5 +1,3 @@
-# Plots
-
 # Density plot 
 density_plot <- ggplot2::ggplot(data_toghether,
                                 ggplot2::aes(x = value, 
@@ -20,34 +18,7 @@ density_plot <- ggplot2::ggplot(data_toghether,
                 linetype = "Score Type") +
   ggplot2::theme(strip.placement = "outside",
                  strip.background = element_blank())#+gganimate::ease_aes('linear')
-ggplot2::ggsave(density_plot, 
-                filename=paste0("images/", score_name, "density_", type, ".pdf"), 
-                width = 10, height = 8)
 
-if(synthetic_scenario){
-  density_plot <- density_plot + 
-    ggplot2::geom_density(data = data_true_all,
-                          ggplot2::aes(x = value),
-                          color = "aquamarine1",
-                          linetype = "dashed",
-                          inherit.aes = FALSE, linewidth=1.2)
-  
-  ggplot2::ggsave(density_plot, 
-                  filename=paste0("images/",score_name, n, "/", "density_",type,".pdf"), 
-                  width = 10, height = 8)
-} else{
-  ggplot2::ggsave(density_plot, 
-                  filename=paste0("images/",score_name,"density_",type,".pdf"), 
-                  width = 10, height = 8)
-  
-}
-
-
-# # remove for GIF
-# gganimate::anim_save(
-#   paste0("images/experts/", folder, "margin/, density_", type, ".gif"),
-#   animate(density_plot, fps = 5, width = 800, height = 600, renderer = gifski_renderer())
-# )
 ecdf_plot <- ggplot2::ggplot(data_toghether,
                              ggplot2::aes(x = value,
                                           color = as.factor(type))) +
@@ -64,18 +35,43 @@ ecdf_plot <- ggplot2::ggplot(data_toghether,
                  strip.background = element_blank())
 
 if(synthetic_scenario){
+  density_plot <- density_plot + 
+    ggplot2::geom_density(data = data_true_all,
+                          ggplot2::aes(x = value),
+                          color = "aquamarine1",
+                          linetype = "dashed",
+                          inherit.aes = FALSE, linewidth=1.2)
+  
+  ggplot2::ggsave(density_plot, 
+                  filename=paste0("images/",score_name, RCT_file, n, "/", "density_",type,".pdf"), 
+                  width = 10, height = 8)
+  
   ecdf_plot<- ecdf_plot + 
     ggplot2::stat_ecdf(data = data_true_all, aes(x=value),
                        color = "aquamarine1",
                        linetype = "dashed", linewidth=1.2, geom = "step")
   ggplot2::ggsave(ecdf_plot, 
-                  filename=paste0("images/",score_name, n, "/", "ecdf_",type,".pdf"), 
+                  filename=paste0("images/",score_name, RCT_file, n, "/", "ecdf_",type,".pdf"), 
                   width = 10, height = 8)
-}else{
+  
+  
+} else{
+  ggplot2::ggsave(density_plot, 
+                  filename=paste0("images/",score_name,"density_",type,".pdf"), 
+                  width = 10, height = 8)
+  
   ggplot2::ggsave(ecdf_plot, 
                   filename=paste0("images/",score_name, "ecdf_",type,".pdf"), 
                   width = 10, height = 8)
+  
 }
+
+
+# # remove for GIF
+# gganimate::anim_save(
+#   paste0("images/experts/", folder, "margin/, density_", type, ".gif"),
+#   animate(density_plot, fps = 5, width = 800, height = 600, renderer = gifski_renderer())
+# )
 
 
 if(synthetic_scenario){
@@ -259,7 +255,7 @@ if(synthetic_scenario){
                   cov_vec=cov_vec, cov_relaxed=cov_relaxed, 
                   cov_unif=cov_unif, spv=spv,heatmaps_r=heatmaps_r, coverage_A=coverage_A )
   
-  saveRDS(object = results, file = paste0("experts_pred/", score_name,
+  saveRDS(object = results, file = paste0("experts_pred/", score_name, RCT_file,
                                           "plot_results_", type, "_", n, ".rds"))
   
 } else{
@@ -405,6 +401,20 @@ spv_boxplot <- ggplot2::ggplot(spv_data, aes(x = factor(level), y = value)) +
   ggplot2::theme_minimal()
 
 # Plot
+if(!synthetic_scenario){
+  pv_macf <- policy_value_tmle(res_macf_0$macf_0_dose_opti, SL.out$df_new_sample, 
+                               mod_y=SL.out$QAW.reg.train, mod_psSL.out$g.reg.tr, 
+                               ab=ab, covariates=covariates_name, 
+                               treatment_name = "classe_dose" , outcome_name="nb_ovocytes",
+                               family="gaussian", levels=levels_A)
+  hline_labels <- data.frame(
+    x = 1,  # start of line (we'll extend it using xend)
+    xend = max(spv_means$level),  # end of line
+    y = c(mean(unweighted_SPV), mean(sl_SPV), mean(exp_SPV), pv_macf ),
+    type = c("Unweighted probs", "SL probs", "Exp probs", "Classic policy learning"),  # used for legend
+    fill = scales::hue_pal()(4))
+}
+
 spv_lines <- ggplot2::ggplot(spv_means, 
                              ggplot2::aes(x = factor(level), 
                                           y = mean_value, color = type)) +
@@ -510,7 +520,8 @@ for (t in 1:dim(heatmaps_r)[5]){
 
 if(synthetic_scenario){
   ggplot2::ggsave(spv_plot, 
-                  filename=paste0("images/", score_name, n, "/", "spv_plot_",type,".pdf"), 
+                  filename=paste0("images/", score_name, RCT_file,
+                                  n, "/", "spv_plot_",type,".pdf"), 
                   width = 30, height = 15)
   
   
@@ -551,7 +562,8 @@ if(synthetic_scenario){
   cov_width_plot <- gridExtra::grid.arrange(cov_plot, mean_width_plot, ncol=2)
   
   ggplot2::ggsave(cov_width_plot, 
-                  filename=paste0("images/", score_name, n, "/", "coverage-width_boxplots_", type, ".pdf"), 
+                  filename=paste0("images/", score_name, RCT_file,
+                                  n, "/", "coverage-width_boxplots_", type, ".pdf"), 
                   width = 30, height = 15)
   
   
@@ -587,7 +599,8 @@ if(synthetic_scenario){
       color = "Random Rate") +
     ggplot2::theme_minimal(base_size = 14)
   
-  ggplot2::ggsave(cov_factor_plot, filename=paste0("images/",score_name, n, "/", "coverage_factor_plot_",type,".pdf"), width = 10, height = 8)
+  ggplot2::ggsave(cov_factor_plot, filename=paste0("images/",score_name, 
+                                                   RCT_file, n, "/", "coverage_factor_plot_",type,".pdf"), width = 10, height = 8)
   
   
   all_data <- dplyr::left_join(spv_means, cov_means, 
@@ -626,11 +639,13 @@ if(synthetic_scenario){
     ggplot2::theme_minimal()
   
   ggplot2::ggsave(
-    filename = paste0("images/", score_name, n, "/", "Coverage_A_", type, ".pdf"),
+    filename = paste0("images/", score_name, RCT_file, 
+                      n, "/", "Coverage_A_", type, ".pdf"),
     coverage_A_plot, width = 30, height = 15)
   
   ggplot2::ggsave(
-    filename = paste0("images/", score_name, n, "/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
+    filename = paste0("images/", score_name, RCT_file, 
+                      n, "/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
     multi_page, width = 30, height = 15)
   
 }else{
@@ -676,7 +691,8 @@ for (t in 1:dim(heatmaps_r)[5]){
   multi_page <- marrangeGrob(grobs = plots_completed, nrow = 1, ncol = 1)
   if(synthetic_scenario){
     ggplot2::ggsave(
-      filename = paste0("images/", score_name, n, "/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
+      filename = paste0("images/", score_name, 
+                        RCT_file, n, "/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
       multi_page, width = 30, height = 15)
   } else {
     ggplot2::ggsave(
@@ -748,7 +764,8 @@ if(synthetic_scenario){
   plot_r <- gridExtra::grid.arrange(plot_ftilde, plot_true, ncol=2)
   
   ggplot2::ggsave(
-    filename = paste0("images/", score_name, n, "/", "randomness_", type, ".pdf"),
+    filename = paste0("images/", score_name, RCT_file,
+                      n, "/", "randomness_", type, ".pdf"),
     plot_r, width = 30, height = 15)
 } else {
   ggplot2::ggsave(
