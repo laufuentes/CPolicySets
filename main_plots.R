@@ -76,12 +76,11 @@ if(synthetic_scenario){
 
 
 if(synthetic_scenario){
-  cov_vec <- mean_width <- cov_relaxed <- array(0, dim=c(length(alphas), 5,
+  cov_unif <- mean_width <- cov_relaxed <- array(0, dim=c(length(alphas), 5,
                                                          ncol(SL.out$rate_cal_labels_exp)))
-  cov_unif<- spv<- array(0, dim=c(length(alphas), n_test, 5,
+  spv<- array(0, dim=c(length(alphas), n_test, 5,
                                   ncol(SL.out$rate_cal_labels_exp)))
   heatmaps_r <- array(0, dim=c(nrow(SL.out$df_new_sample), m, length(alphas),ncol(SL.out$rate_cal_labels_exp),5))
-  coverage_A <-  array(0, dim=c(length(alphas),ncol(SL.out$rate_cal_labels_exp),5))
 } else {
   mean_width <- array(0, dim=c(length(alphas), 4,
                                ncol(SL.out$rate_cal_labels_exp)))
@@ -91,8 +90,6 @@ if(synthetic_scenario){
                                m, length(alphas),
                                ncol(SL.out$rate_cal_labels_exp),
                                4))
-  coverage_A <-  array(0, dim=c(length(alphas),
-                                ncol(SL.out$rate_cal_labels_exp),4))
 }
 
 # For uppest-lower bound 
@@ -115,7 +112,6 @@ for(i in 1:length(alphas)){
                                    levels = seq_len(nrow(binary_confidence_set))))
     
     mean_width[i,1,r]<- width(pred_set = confidence_set)
-    #coverage_A[i,r,1] <- coverage_relaxed(test[,treatment_name], pred_set = confidence_set)
     heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set, levels_A) %>% as.matrix()
     
     # SL 
@@ -127,9 +123,6 @@ for(i in 1:length(alphas)){
                                      levels = seq_len(nrow(w.binary_confidence_set))))
     
     mean_width[i,2,r]<- width(pred_set = w.confidence_set)
-    
-    
-    #coverage_A[i,r,2] <- coverage_relaxed(test[,treatment_name], pred_set = w.confidence_set)
     heatmaps_r[,,i,r,2] <- heatmap_treatments(w.confidence_set, levels_A) %>% as.matrix()
     # Exponential  
     exp.quantile <- stats::quantile(SL.out$rate_scores_exp_cal[,r], (1-alpha))
@@ -140,8 +133,6 @@ for(i in 1:length(alphas)){
                                        levels = seq_len(nrow(exp.binary_confidence_set))))
     
     mean_width[i,3,r]<- width(pred_set = exp.confidence_set)
-    
-    #coverage_A[i,r,3] <- coverage_relaxed(test[,treatment_name], pred_set = exp.confidence_set)
     heatmaps_r[,,i,r,3] <- heatmap_treatments(exp.confidence_set, levels_A) %>% as.matrix()
     if(synthetic_scenario){
       # Unweighted 
@@ -152,31 +143,25 @@ for(i in 1:length(alphas)){
                                               covariates = covariates_name,
                                               test_potential_outcome= SL.out$potential_outcomes)
       
-      cov_vec[i,1,r]<- coverage(true_set = SL.out$optimal_policy_new, 
-                                pred_set = confidence_set)
       cov_relaxed[i,1,r]<- coverage_relaxed(true_set = SL.out$optimal_policy_new, 
                                             pred_set = confidence_set)
-      cov_unif[i,,1,r]<- replicate(n_test,coverage_unif(SL.out$optimal_policy_new, 
-                                                        pred_set=confidence_set))
+      cov_unif[i,1,r]<- coverage_unif(SL.out$optimal_policy_new, 
+                                      pred_set=confidence_set)
       # SL 
       spv[i,,2,r]<- oracular_set_policy_value(w.confidence_set, test= SL.out$df_new, levels=levels_A,
                                             treatment_name = treatment_name,
                                             outcome_name = outcome_name,
                                             covariates = covariates_name,
                                             test_potential_outcome=SL.out$potential_outcomes)
-      cov_vec[i,2,r]<- coverage(true_set = SL.out$optimal_policy_new, 
-                                pred_set = w.confidence_set)
       cov_relaxed[i,2,r]<- coverage_relaxed(true_set = SL.out$optimal_policy_new, 
                                             pred_set = w.confidence_set)
-      cov_unif[i,,2,r]<- replicate(n_test,coverage_unif(SL.out$optimal_policy_new,
-                                                        pred_set = w.confidence_set))
+      cov_unif[i,2,r]<- coverage_unif(SL.out$optimal_policy_new,
+                                       pred_set = w.confidence_set)
       # Exponential 
-      cov_vec[i,3,r]<- coverage(true_set = SL.out$optimal_policy_new, 
-                                pred_set = exp.confidence_set)
       cov_relaxed[i,3,r]<- coverage_relaxed(true_set = SL.out$optimal_policy_new, 
                                             pred_set = exp.confidence_set)
-      cov_unif[i,,3,r]<- replicate(n_test,coverage_unif(SL.out$optimal_policy_new,
-                                                        pred_set = exp.confidence_set))
+      cov_unif[i,3,r]<- coverage_unif(SL.out$optimal_policy_new,
+                                       pred_set = exp.confidence_set)
       spv[i,,3,r]<- oracular_set_policy_value(exp.confidence_set,test= SL.out$df_new, levels=levels_A,
                                             treatment_name = treatment_name,
                                             outcome_name = outcome_name,
@@ -226,7 +211,6 @@ for(i in 1:length(alphas)){
   naive.confidence_set <- split(indices_naive[, "col"], indices_naive[, "row"])
   
   mean_width[i,4,]<- width(pred_set = naive.confidence_set)
-  coverage_A[i,r,4] <- coverage_relaxed(test[,treatment_name], pred_set = naive.confidence_set)
   heatmaps_r[,,i,r,4] <- heatmap_treatments(naive.confidence_set, levels_A) %>% as.matrix()
   if(synthetic_scenario){
     # uppest-lower bound set  
@@ -236,12 +220,10 @@ for(i in 1:length(alphas)){
                                          outcome_name = outcome_name,
                                          covariates = covariates_name,
                                          test_potential_outcome = SL.out$potential_outcomes)
-    cov_vec[i,4,]<- coverage(true_set = SL.out$optimal_policy_new, 
-                             pred_set = naive.confidence_set)
     cov_relaxed[i,4,]<- coverage_relaxed(true_set = SL.out$optimal_policy_new, 
                                          pred_set = naive.confidence_set)
-    cov_unif[i,,4,]<- replicate(n_test,coverage_unif(SL.out$optimal_policy_new,
-                                                     pred_set=naive.confidence_set))
+    cov_unif[i,4,]<- coverage_unif(SL.out$optimal_policy_new,
+                                    pred_set=naive.confidence_set)
     # true 
     true_quant <- stats::quantile(SL.out$true_score, (1-alpha))
     true_binary_confidence_set <-  ifelse(SL.out$new_scores<true_quant, 1, 0)
@@ -251,12 +233,8 @@ for(i in 1:length(alphas)){
                                         levels = seq_len(nrow(true_binary_confidence_set))))
     
     mean_width[i,5,]<- width(pred_set = true_confidence_set)
-    cov_vec[i,5,]<- coverage(true_set = SL.out$optimal_policy_new, 
-                             pred_set = true_confidence_set)
-    cov_relaxed[i,5,]<- coverage_relaxed(true_set = SL.out$optimal_policy_new, 
-                                         pred_set = true_confidence_set)
-    cov_unif[i,,5,]<- replicate(n_test, coverage_unif(SL.out$optimal_policy_new,
-                                                      pred_set = true_confidence_set))
+    cov_unif[i,5,]<- coverage_unif(SL.out$optimal_policy_new,
+                                   pred_set = true_confidence_set)
     spv[i,,5,]<- oracular_set_policy_value(true_confidence_set, 
                                          test= SL.out$df_new, levels=levels_A,
                                          treatment_name = treatment_name,
@@ -264,7 +242,6 @@ for(i in 1:length(alphas)){
                                          covariates = covariates_name,
                                          test_potential_outcome=SL.out$potential_outcomes)
     
-    coverage_A[i,r,5] <- coverage_relaxed(test[,treatment_name], pred_set = true_confidence_set)
     heatmaps_r[,,i,r,5] <- heatmap_treatments(true_confidence_set, levels_A) %>% as.matrix()
   }else{
     spv[i,,4,]<- bounds_set_policy_value(naive.confidence_set, ab = ab,
@@ -281,14 +258,16 @@ for(i in 1:length(alphas)){
 
 if(synthetic_scenario){
   results <- list(mean_width= mean_width,
-                  cov_vec=cov_vec, cov_relaxed=cov_relaxed, 
-                  cov_unif=cov_unif, spv=spv,heatmaps_r=heatmaps_r, coverage_A=coverage_A )
+                  cov_relaxed=cov_relaxed, 
+                  cov_unif=cov_unif, spv=spv,
+                  heatmaps_r=heatmaps_r)
   
   saveRDS(object = results, file = paste0("experts_pred/", score_name, RCT_file,
                                           "plot_results_", type, "_", n, ".rds"))
   
 } else{
-  results <- list(mean_width= mean_width, spv=spv, heatmaps_r=heatmaps_r, coverage_A=coverage_A)
+  results <- list(mean_width= mean_width, spv=spv, 
+                  heatmaps_r=heatmaps_r)
   
   saveRDS(object = results, file = paste0("experts_pred/", score_name, 
                                           "plot_results_", type,  ".rds"))
@@ -517,31 +496,6 @@ mean_width_plot <- ggplot2::ggplot(data=mean_width_data,
   ggplot2::labs(title="Mean width", x = "Level", y = "Coverage") +
   ggplot2::theme_minimal()
 
-if(synthetic_scenario){
-  coverage_A_data <- expand.grid(
-    level      = alphas,
-    randomness = random_rate,
-    expert     = c("Unweighted", "SL", "Exp", "Naive","True")
-  ) %>%
-    mutate(value = as.vector(coverage_A))
-}else{
-  coverage_A_data <- expand.grid(
-    level      = alphas,
-    randomness = random_rate,
-    expert     = c("Unweighted", "SL", "Exp", "Naive")
-  ) %>%
-    mutate(value = as.vector(coverage_A))
-}
-
-coverage_A_plot <- ggplot2::ggplot(data=coverage_A_data, 
-                                   ggplot2::aes(x = level, y = value, 
-                                                group = randomness, color = factor(randomness)))+
-  ggplot2::geom_line(aes(group=randomness))+
-  ggplot2::geom_point(aes(group=randomness))+
-  ggplot2::scale_color_viridis_d(option="magma")+
-  ggplot2::facet_grid(rows=ggplot2::vars(expert)) +
-  ggplot2::labs(x = "Level", y = "Coverage real treatment") +
-  ggplot2::theme_minimal()
 
 names_experts <- c("Unweighted", "SL", "Exp", "Naive")
 if(synthetic_scenario){
@@ -582,7 +536,7 @@ if(synthetic_scenario){
     make_block(3, "Exp", results[["cov_unif"]], alphas, random_rate), 
     map_dfr(1:dim(results[["cov_unif"]])[1], function(a) {
       data.frame(
-        value = results[["cov_unif"]][a, , 4, 1],
+        value = results[["cov_unif"]][a, 4, 1],
         mechanism = "True",
         level = paste0(alphas[a]),
         type = paste0(random_rate[1])
@@ -597,7 +551,7 @@ if(synthetic_scenario){
   cov_plot <- ggplot2::ggplot(cov_data, 
                               ggplot2::aes(x = factor(level), y = value, 
                                            fill = type)) +
-    ggplot2::geom_boxplot() +
+    ggplot2::geom_points() +
     ggplot2::geom_line(data = cov_means,
                        ggplot2::aes(x = factor(level), y = mean_value, 
                                     group = type, colour = type)) +

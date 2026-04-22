@@ -142,7 +142,7 @@ coverage <- function(true_set, pred_set){
 #' @examples
 #' true <- list(c(1, 2), c(3))
 #' pred <- list(c(1), c(3, 4))
-#' coverage_unif(true, pred)
+#' coverage_relaxed(true, pred)
 coverage_relaxed <- function(true_set, pred_set, levels=1:5){
   if(!(is.list(pred_set) & is.list(true_set))){
     msg_list <- paste("Sets are not lists")
@@ -157,6 +157,61 @@ coverage_relaxed <- function(true_set, pred_set, levels=1:5){
   for(i in 1:n){
     intersection <- length(intersect(true_set[[i]], pred_set[[i]]))
     coverage[i] <- ifelse(intersection>0,1,0)
+  }
+  mean(coverage)
+}
+
+#' Strict coverage for single observation
+#'
+#' Returns one if true set is strictly contained within 
+#' the predicted set zero otherwose. 
+#'
+#' @param true_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param pred_set A `list` of numeric or character vectors representing the predicted sets.
+#'
+#' @return A numeric value representing the mean coverage (proportion of 
+#'   intersected elements over true set size) across all observations.
+#' @export
+#'
+#' @examples
+#' true <- list(c(1, 2), c(3))
+#' pred <- list(c(1), c(3, 4))
+#' coverage_strict(true, pred)
+
+coverage_strict_single <- function(true_set, pred_set) {
+  if (all(true_set %in% pred_set)) return(1) else return(0)
+}
+
+#' Strict coverage
+#'
+#' Computes the average proportion of the true set that is strictly contained within 
+#' the predicted set. This is a normalized measure of recall across multiple 
+#' observations.
+#'
+#' @param true_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param pred_set A `list` of numeric or character vectors representing the predicted sets.
+#'
+#' @return A numeric value representing the mean coverage (proportion of 
+#'   intersected elements over true set size) across all observations.
+#' @export
+#'
+#' @examples
+#' true <- list(c(1, 2), c(3))
+#' pred <- list(c(1), c(3, 4))
+#' coverage_strict(true, pred)
+coverage_strict <- function(true_set, pred_set, levels=1:5){
+  if(!(is.list(pred_set) & is.list(true_set))){
+    msg_list <- paste("Sets are not lists")
+    warning(msg_list)
+  }
+  if(!(length(pred_set)== length(true_set))){
+    msg_length_list <- paste("Sets of different size")
+    warning(msg_length_list)
+  }
+  n <- length(true_set)
+  coverage <- matrix(0, nrow=n)
+  for(i in 1:n){
+    coverage[i] <- coverage_strict_single(true_set = true_set[[i]], pred_set= pred_set[[i]])
   }
   mean(coverage)
 }
@@ -295,3 +350,4 @@ oracular_set_policy_value <- function(test_set, test, test_potential_outcome,
   
   results
 }
+
