@@ -87,7 +87,7 @@ for(i in 1:length(alphas)){
     
     mean_width[i,1,r]<- width(pred_set = confidence_set)
     heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set, levels_A) %>% as.matrix()
-    spv[i,,1,r] <- bounds_set_policy_value(confidence_set, ab = ab,
+    spv[i,,1,r] <- set_policy_value(confidence_set, ab = ab,
                                          test= SL.out$df_new, levels=levels_A,
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
@@ -116,7 +116,7 @@ for(i in 1:length(alphas)){
   
   mean_width[i,2,]<- width(pred_set = naive.confidence_set)
   heatmaps_r[,,i,r,2] <- heatmap_treatments(naive.confidence_set, levels_A) %>% as.matrix()
-  spv[i,,2,r] <- bounds_set_policy_value(naive.confidence_set, ab = ab,
+  spv[i,,2,r] <- set_policy_value(naive.confidence_set, ab = ab,
                                          test= SL.out$df_new, levels=levels_A,
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
@@ -147,7 +147,7 @@ spv_data <- dplyr::bind_rows(
 
 type_vals <- sort(unique(spv_data$type))
 
-spv_classic<- bounds_set_policy_value(SL.out$doptFactorPredict_new, ab = ab,
+spv_classic<- set_policy_value(SL.out$doptFactorPredict_new, ab = ab,
                                     test= SL.out$df_new, levels=levels_A,
                                     treatment_name = treatment_name,
                                     outcome_name = outcome_name,

@@ -146,112 +146,30 @@ width <- function(pred_set, levels=1:5){
   mean(m_width)
 }
 
-policy_value_tmle<- function(random_policy, test, 
-                            mod_y, mod_ps, 
-                            ab, covariates=c("x1","x2"), 
-                            treatment_name = "A", outcome_name="Y",
-                            family="gaussian", levels){
-  ## ---- 2. Predict g once ----
-  gAW.pred <- stats::predict(
-    mod_ps,
-    newdata = test[, covariates, drop = FALSE],
-    type = "prob"
-  )
-  gAW_bounded <- pmax(gAW.pred, 0.01)
-  
-  ## ---- 3. Predict Q once for all actions ----
-  base_newdata <- test[, covariates, drop = FALSE]
-  Q_all_actions <- sapply(levels, function(a) {
-    newdata_temp <- base_newdata
-    newdata_temp[, treatment_name] <- factor(a, levels = levels)
-    stats::predict(mod_y, 
-                   newdata = newdata_temp, 
-                   type = "response")$pred
-  })
-  
-  ## ---- 4. Compute result ----
-  Y_mat <- matrix(test[, outcome_name])
-  tmle.obj.test = SL.ODTR::tmle.d.fun(A = test[,treatment_name], 
-                                      Y = Y_mat,
-                                      d = random_policy, 
-                                      Qd =  Q_all_actions[cbind(1:nrow(test),random_policy)], 
-                                      gAW = gAW_bounded[cbind(1:nrow(test),random_policy)], 
-                                      ab = ab)
-  return(tmle.obj.test$psi)
-}
-
-bounds_set_policy_value <- function(test_set, test, 
-                                    mod_y,
-                                    treatment_name = "A",
-                                    outcome_name = "Y",
-                                    mod_ps, ab, n_test = 1,
-                                    covariates = c("x1","x2"),
-                                    levels) {
-  
-  n <- nrow(test)
-  m <-length(levels)
-  row_idx <- seq_len(n)
-  col_offset <- (0:(m - 1)) * n
-  
-  ## ---- 1. FAST policy sampling ----
-  random_policy <- matrix(NA_integer_, n, n_test)
-  
-  for (i in seq_len(n)) {
-    allowed <- test_set[[i]]
-    
-    if (length(allowed) > 0) {
-      random_policy[i, ] <- allowed[sample.int(length(allowed), n_test, replace = TRUE)]
-    } else {
-      random_policy[i, ] <- sample.int(m, n_test, replace = TRUE)
-    }
-  }
-  
-  ## ---- 2. Predict g once ----
-  gAW.pred <- stats::predict(
-    mod_ps,
-    newdata = test[, covariates, drop = FALSE],
-    type = "prob"
-  )
-  gAW_bounded <- pmax(gAW.pred, 0.01)
-  
-  ## ---- 3. Predict Q once for all actions ----
-  base_newdata <- test[, covariates, drop = FALSE]
-  
-  Q_all_actions <- sapply(levels, function(a) {
-    newdata_temp <- base_newdata
-    newdata_temp[, treatment_name] <- factor(a, levels = levels)
-    stats::predict(mod_y, 
-                   newdata = newdata_temp, 
-                   type = "response")$pred
-  })
-  
-  ## ---- 4. Compute result ----
-  Y_mat <- matrix(test[, outcome_name])
-  
-  results <- unlist(
-    parallel::mclapply(seq_len(n_test), function(p) {
-      d <- random_policy[, p]
-      lin_idx <- row_idx + col_offset[d]
-      
-      SL.ODTR::tmle.d.fun(
-        A   = test[, treatment_name],
-        Y   = Y_mat,
-        d   = d,
-        Qd  = Q_all_actions[lin_idx],
-        gAW = gAW_bounded[lin_idx],
-        ab  = ab)$psi
-    }, mc.cores = parallel::detectCores())
-  )
-  
-  results
-}
-
+#' Oracular set-policy value 
+#'
+#' Computes the oracular set-policy value of a set-valued policy using potential outcomes. 
+#' **Note:** This function is uses the package `SL.ODTR` from 
+#' Montoya, L. M., van der Laan, M. J., Luedtke, A. R., Skeem, J. L., Coyle, J. R., 
+#' & Petersen, M. L. (2023). The optimal dynamic treatment rule superlearner: 
+#' considerations, performance, and application to criminal justice interventions.
+#'
+#' @param test_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param test Data frame used for prediction (calibration/test set).
+#' @param test_potential_outcome A data frame containing the potential outcomes. 
+#' @param covariates Character vector of covariate names. Defaults to `c("x1", "x2")`.
+#' @param treatment_name String indicating the treatment variable. Defaults to "A".
+#' @param outcome_name String indicating the outcome variable. Defaults to "Y".
+#' @param n_test Integer indicating the number of policies to sample at random for the set-valued policy.
+#' @param levels Vector of possible treatment/action levels. Defaults to `1:5`.
+#'
+#' @return A numeric value representing the oracular set-policy value of the set-valued policy.
+#' @export
 oracular_set_policy_value <- function(test_set, test, test_potential_outcome,
+                                    covariates = c("x1","x2"),
                                     treatment_name = "A",
                                     outcome_name = "Y",
-                                     n_test = 1,
-                                    covariates = c("x1","x2"),
-                                    levels) {
+                                    n_test = 1, levels= 1:5) {
   
   n <- nrow(test)
   m<- length(levels)
@@ -281,13 +199,119 @@ oracular_set_policy_value <- function(test_set, test, test_potential_outcome,
   results
 }
 
+#' Set-policy value 
+#'
+#' Estimates the uniform set-policy value of a set-valued policy. 
+#' **Note:** This function is uses the package `SL.ODTR` from 
+#' Montoya, L. M., van der Laan, M. J., Luedtke, A. R., Skeem, J. L., Coyle, J. R., 
+#' & Petersen, M. L. (2023). The optimal dynamic treatment rule superlearner: 
+#' considerations, performance, and application to criminal justice interventions.
+#'
+#' @param test_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param test Data frame used for prediction (calibration/test set).
+#' @param covariates Character vector of covariate names. Defaults to `c("x1", "x2")`.
+#' @param treatment_name String indicating the treatment variable. Defaults to "A".
+#' @param outcome_name String indicating the outcome variable. Defaults to "Y".
+#' @param mod_y Model to predict the conditional mean outcome (estimate potential outcomes).
+#' @param mod_ps Model to predict the propensity score.
+#' @param ab Float indicating the largest difference in the outcome. 
+#' @param n_test Integer indicating the number of policies to sample at random for the set-valued policy.
+#' @param levels Vector of possible treatment/action levels. Defaults to `1:5`.
+#'
+#' @return A numeric value representing the estimated set-policy value of the set-valued policy.
+#' @export
+set_policy_value <- function(test_set, test, 
+                             covariates = c("x1","x2"),
+                             treatment_name = "A",
+                             outcome_name = "Y",
+                             mod_y, mod_ps, ab, n_test = 1, levels) {
+  n <- nrow(test)
+  m <-length(levels)
+  row_idx <- seq_len(n)
+  col_offset <- (0:(m - 1)) * n
+  
+  random_policy <- matrix(NA_integer_, n, n_test)
+  
+  for (i in seq_len(n)) {
+    allowed <- test_set[[i]]
+    
+    if (length(allowed) > 0) {
+      random_policy[i, ] <- allowed[sample.int(length(allowed), n_test, replace = TRUE)]
+    } else {
+      random_policy[i, ] <- sample.int(m, n_test, replace = TRUE)
+    }
+  }
+  
+  gAW.pred <- stats::predict(
+    mod_ps,
+    newdata = test[, covariates, drop = FALSE],
+    type = "prob"
+  )
+  gAW_bounded <- pmax(gAW.pred, 0.01)
+  
+  base_newdata <- test[, covariates, drop = FALSE]
+  
+  Q_all_actions <- sapply(levels, function(a) {
+    newdata_temp <- base_newdata
+    newdata_temp[, treatment_name] <- factor(a, levels = levels)
+    stats::predict(mod_y, 
+                   newdata = newdata_temp, 
+                   type = "response")$pred
+  })
+  
+  Y_mat <- matrix(test[, outcome_name])
+  
+  results <- unlist(
+  parallel::mclapply(seq_len(n_test), function(p) {
+    d <- random_policy[, p]
+    lin_idx <- row_idx + col_offset[d]
+    
+    SL.ODTR::tmle.d.fun(
+      A   = test[, treatment_name],
+      Y   = Y_mat,
+      d   = d,
+      Qd  = Q_all_actions[lin_idx],
+      gAW = gAW_bounded[lin_idx],
+      ab  = ab)$psi
+  }, mc.cores = parallel::detectCores())
+  )
+  
+  results
+}
 
+#' Set-policy values for IVF data example 
+#'
+#' Estimates the uniform set-policy value for a primary outcome (Y) and an 
+#' adverse event (xi). Additionally computes the value for a "minimal treatment" 
+#' strategy—selecting the lowest available treatment level across all cases.  
+#' **Note:** This function is uses the package `SL.ODTR` from 
+#' Montoya, L. M., van der Laan, M. J., Luedtke, A. R., Skeem, J. L., Coyle, J. R., 
+#' & Petersen, M. L. (2023). The optimal dynamic treatment rule superlearner: 
+#' considerations, performance, and application to criminal justice interventions. 
+#'
+#' @param test_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param test Data frame used for prediction (calibration/test set).
+#' @param covariates Character vector of covariate names. Defaults to `c("x1", "x2")`.
+#' @param treatment_name String indicating the treatment variable. Defaults to "A".
+#' @param outcome_name String indicating the outcome variable. Defaults to "Y".
+#' @param second_outcome String indicating the second outcome variable. Defaults to "xi".
+#' @param mod_y Model to predict the conditional mean outcome.
+#' @param mod_y Model to predict the conditional mean of the second outcome.
+#' @param mod_ps Model to predict the propensity score.
+#' @param ab Float indicating the largest difference in the outcome. 
+#' @param ab_xi Float indicating the largest difference in the second outcome. 
+#' @param n_test Integer indicating the number of policies to sample at random for the set-valued policy.
+#' @param levels Vector of possible treatment/action levels. Defaults to `1:5`.
+#'
+#' @return A list with the estimated set-policy values (random and lowest 
+#' strategy for Y and xi) of the set-valued policy.
+#' @export
 ivf_set_policy_values <- function(test_set, test, 
-                                    mod_y, mod_xi, mod_ps, 
-                                    treatment_name = "A",
-                                    outcome_name = "Y", second_outcome ="xi",
-                                    ab, levels, n_test=1,
-                                    covariates = c("x1","x2")) {
+                                  covariates = c("x1","x2"),
+                                  treatment_name = "A",
+                                  outcome_name = "Y", second_outcome ="xi",
+                                  mod_y, mod_xi, mod_ps, 
+                                  ab, ab_xi, n_test=1,levels) {
   
   n <- nrow(test)
   m <-length(levels)
@@ -355,3 +379,31 @@ ivf_set_policy_values <- function(test_set, test,
     results_min_xi    = compute_psi(lowest_policy, xi_vec, Q_all_xi)
   )
 }
+
+#' Margin Nonconformity Score
+#'
+#' Generates the margin nonconformity scores for a matrix of potential outcomes.
+#' The score is calculated as the difference between the maximum potential 
+#' outcome and all other outcomes, with a specific "margin" calculation for 
+#' the winning class.
+#'
+#' @param potential_outcomes Matrix of potential outcomes (observations by treatments).
+#'
+#' @return A matrix of the same dimensions as `potential_outcomes` containing 
+#'   the margin nonconformity scores.
+#' @export
+#' 
+#' @examples
+#' margin_score(matrix(runif(10 * 5), 10, 5))
+margin_score <- function(potential_outcomes) {
+  which_max <- max.col(potential_outcomes, ties.method = "first")
+  row_indices <- seq_len(nrow(potential_outcomes))
+  max_vals <- potential_outcomes[cbind(row_indices, which_max)]
+  temp_outcomes <- potential_outcomes
+  temp_outcomes[cbind(row_indices, which_max)] <- -Inf
+  second_max_vals <- apply(temp_outcomes, 1, max)
+  score_matrix <- max_vals - potential_outcomes
+  score_matrix[cbind(row_indices, which_max)] <- second_max_vals - max_vals
+  return(score_matrix)
+}
+

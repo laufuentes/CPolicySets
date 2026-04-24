@@ -1,7 +1,6 @@
 #' Create a standard data block
 #' 
 #' Reshapes a 4D array into a long-format data frame. 
-#' **Note:** This is adapted from an external codebase.
 #' 
 #' @param mech_index Integer index for the mechanism.
 #' @param mech_name String label for the mechanism.
@@ -105,7 +104,15 @@ make_smaller_bigger_block <- function(mech_index, mech_name, array_a, alpha_vec,
   })
 }
 
-
+#' Create a heatmap for treatments included in set-valued policies 
+#' 
+#' Creates a data frame one-hot encoding the inclusion of treatments 
+#' in set-valued policies. Rows represent observations and columns 
+#' the treatment levels.
+#' 
+#' @param confidence_set Integer index for the mechanism.
+#' @param levels_A String label for the mechanism.
+#' @export
 heatmap_treatments <- function(confidence_set, levels_A){
   df <- tibble(
     row_id = 1:length(confidence_set), 
