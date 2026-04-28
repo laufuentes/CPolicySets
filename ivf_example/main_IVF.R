@@ -40,7 +40,6 @@ library(viridisLite)
 
 # ── Load functions from src files  ────────────────────────────────────────────
 source("src/synthetic_data.R")
-source("src/non-conformity-scores.R")
 source("src/label-estimation.R")
 source("src/utils.R")
 source("src/evaluation.R")
