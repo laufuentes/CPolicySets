@@ -5,13 +5,12 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
                                         "SL.xgboost","SL.ranger","SL.ksvm"),
                                       root.path = ".",
                                       ){
+  # ── Directory check ─────────────────────────────────────────────────────────
   if (!dir.exists(root.path)) {
     warning(sprintf("The directory '%s' does not exist. Creating it...", root.path))
     dir.create(root.path, recursive = TRUE)
   }
-
   subdirs <- c("images", "predictions")
-
   for (subdir in subdirs) {
     subdir_path <- file.path(root.path,"inst", subdir)
 
@@ -22,24 +21,42 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
   }
   message("Directory check complete.")
 
-  # Previous sanity checks:
-  # A and A_test must be numeric
+  # ── Data sanity checks ──────────────────────────────────────────────────────
+  # Ensure covariates are numeric
+  is_X_numeric <- all(sapply(X, is.numeric)) && all(sapply(X_test, is.numeric))
+  if (!is_X_numeric) {
+    stop("Covariates (X/X_test) must be numeric. Please check your one-hot encoding.")
+  }
+  covariate_name <- colnames(X)
 
-  SL.out<- list()
-
-  family = ifelse(max(Y) <= 1 & min(Y) >= 0, "binomial", "gaussian") # in [0,1] or beyond
-  SL.out$family = family
-  ab <- c(min(c(Y,Y_new)),max(c(Y,Y_new)))
-
-  covariate_name <- NULL
-  treatment_name <- NULL
-  outcome_name <- NULL
-  SL.out$df_obs <- data.frame(X, A, Y)
-
-  SL.out$df_new_sample <- data.frame(X_test, A_test, Y_test)
-
+  # Verify treatments are factors
+  is_A_factor <- is.factor(A) && is.factor(A_test)
+  if (!is_A_factor) {
+    stop("Treatment variables (A/A_test) must be factors.")
+  }
+  # Vreify treatments have same levels
+  same_levels <- identical(levels(A), levels(A_test))
+  if (!same_levels) {
+    stop("A and A_test have mismatched factor levels.")
+  }
   levels_A <- levels(A) # treatment levels
   m <- length(levels(A)) # number of treatment levels
+  treatment_name <- "A"
+
+  # Outcome family
+  family = ifelse(max(Y) <= 1 & min(Y) >= 0, "binomial", "gaussian") # in [0,1] or beyond
+  ab <- c(min(c(Y,Y_test)),max(c(Y,Y_test)))
+  outcome_name <- "Y"
+
+  # ── Storage object  ─────────────────────────────────────────────────────────
+  SL.out<- list()
+  SL.out$family = family
+  SL.out$df_obs <- data.frame(X, A, Y)
+  colnames(SL.out$df_obs) <- c(covariate_names, treatment_name, outcome_name)
+
+  SL.out$df_new_sample <- data.frame(X_test, A_test, Y_test)
+  colnames(SL.out$df_new_sample) <- c(covariate_names, treatment_name,
+                                      outcome_name)
 
   # ── 0) Divide data into three even sets ─────────────────────────────────────
   SL.out$folds <- SuperLearner::CVFolds(n, id = NULL,Y = Y,
@@ -149,6 +166,24 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
       confidence_set <- split(idx[, "col"],
                               factor(idx[, "row"],
                                      levels = seq_len(nrow(binary_confidence_set))))
-      }}
+    }
+    lowers <- uppers <- lowers_test <- uppers_test <- matrix(0,
+                                                             nrow=nrow(SL.out$df_new),
+                                                             ncol=m)
+    z <- stats::qnorm(1 - alpha/2)
+    for (l in as.numeric(levels_A)){
+      treatment_l <- matrix(0, nrow=nrow(SL.out$df_new), ncol=m)
+      treatment_l[,l] <- 1
+      data_l <- data.frame(SL.out$df_new[,covariates_name], Treatment=treatment_l)
+      pred <- stats::predict(model, newdata = data_l, estimate.variance = TRUE)
+      se <- sqrt(pred$variance.estimates)
+      lowers[,l] <- pred$predictions - z * se
+      uppers[,l] <- pred$predictions + z * se
+    }
+    uppest_lrw_bound <- apply(lowers, 1, max)
+    C_set_binary_naive <- ifelse(uppers>=uppest_lrw_bound, 1, 0)
+    indices_naive <- which(C_set_binary_naive != 0, arr.ind = TRUE)
+    naive.confidence_set <- split(indices_naive[, "col"], indices_naive[, "row"])
+    }
 
 }

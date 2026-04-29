@@ -74,6 +74,11 @@ X_new <- SL.out$df_new_sample[,covariates_name] %>% as.matrix()
 treatment_name <-  # name of treatment indicator in dataset
 A <- SL.out$df_obs[,treatment_name]
 A_new <- SL.out$df_new_sample[,treatment_name]
+levels_A <- levels(A) # treatment levels
+m <- length(levels(A)) # number of treatment levels
+
+SL.out$df_obs[,treatment_name] <- as.factor(SL.out$df_obs[,treatment_name], 
+                                            levels=levels_A)
 
 levels_A <- levels(A) # treatment levels
 m <- length(levels(A)) # number of treatment levels
