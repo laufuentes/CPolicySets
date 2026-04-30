@@ -210,7 +210,7 @@ expert_fit_predict <- function(train, test, new = NULL,
   
   for (learner in qlearners_list) {
     name <- learner$name
-    cat("Processing:", name, "\n")
+    cat("Learning OTR with:", name, "\n")
     
     if (learner$type == "policytree") {
       # Train policytree model

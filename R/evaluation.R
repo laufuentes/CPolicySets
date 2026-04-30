@@ -134,9 +134,9 @@ coverage_strict <- function(true_set, pred_set, levels=1:5){
 #' pred <- list(c(1), c(3, 4))
 #' width(pred)
 width <- function(pred_set, levels=1:5){
-  if(!(is.list(pred_set))){
-    msg_list <- paste("Sets are not lists")
-    warning(msg_list)
+  if(!is.list(pred_set)){
+    coords <- which(pred_set == 1, arr.ind = TRUE)
+    pred_set <- split(coords[, "col"], coords[, "row"])
   }
   n <- length(pred_set)
   m_width <- matrix(0, nrow=n)
@@ -176,6 +176,11 @@ oracular_set_policy_value <- function(test_set, test, test_potential_outcome,
   row_idx <- seq_len(n)
   col_offset <- (0:(m - 1)) * n
 
+  if(!is.list(test_set)){
+    coords <- which(test_set == 1, arr.ind = TRUE)
+    test_set <- split(coords[, "col"], coords[, "row"])
+  }
+  
   ## ---- 1. FAST policy sampling ----
   random_policy <- matrix(NA_integer_, n, n_test)
 
@@ -230,6 +235,11 @@ set_policy_value <- function(test_set, test,
   row_idx <- seq_len(n)
   col_offset <- (0:(m - 1)) * n
 
+  if(!is.list(test_set)){
+    coords <- which(test_set == 1, arr.ind = TRUE)
+    test_set <- split(coords[, "col"], coords[, "row"])
+  }
+  
   random_policy <- matrix(NA_integer_, n, n_test)
 
   for (i in seq_len(n)) {
@@ -314,6 +324,10 @@ ivf_set_policy_values <- function(test_set, test,
                                   mod_y, mod_xi, mod_ps,
                                   ab, ab_xi, n_test=1,levels) {
 
+  if(!is.list(test_set)){
+    coords <- which(test_set == 1, arr.ind = TRUE)
+    test_set <- split(coords[, "col"], coords[, "row"])
+  }
   n <- nrow(test)
   m <-length(levels)
   row_idx <- seq_len(n)

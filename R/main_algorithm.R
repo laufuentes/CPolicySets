@@ -1,27 +1,10 @@
 learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
                                       random_rate=c(0,0.2,0.5),
-                                      alphas = seq(0,0.5,0.05),
+                                      alphas = seq(0,0.5,0.05), VFolds=3,
                                       label_generation = list(
                                         list(type = "drql", q_func = "q_glm"), 
                                         list(type = "drql", q_func = "q_sl", sl_library = "SL.xgboost")),
-                                      SL.library.nuisance = c("SL.mean", "SL.glm","SL.ranger", "SL.xgboost"),
-                                      root.path = ".",
-                                      ){
-  # ── Directory check ─────────────────────────────────────────────────────────
-  if (!dir.exists(root.path)) {
-    warning(sprintf("The directory '%s' does not exist. Creating it...", root.path))
-    dir.create(root.path, recursive = TRUE)
-  }
-  subdirs <- c("images", "predictions")
-  for (subdir in subdirs) {
-    subdir_path <- file.path(root.path,"inst", subdir)
-
-    if (!dir.exists(subdir_path)) {
-      message(sprintf("Creating subdirectory: %s", subdir))
-      dir.create(subdir_path, recursive = TRUE)
-    }
-  }
-  message("Directory check complete.")
+                                      SL.library.nuisance = c("SL.mean", "SL.glm","SL.ranger", "SL.xgboost")){
 
   # ── Data sanity checks ──────────────────────────────────────────────────────
   # Check no missing data
@@ -48,14 +31,29 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
   levels_A <- levels(A) # treatment levels
   m <- length(levels(A)) # number of treatment levels
   treatment_name <- "A"
-
   # Outcome family
   family = ifelse(max(Y) <= 1 & min(Y) >= 0, "binomial", "gaussian") # in [0,1] or beyond
   ab <- c(min(cbind(Y,Y_test)),max(cbind(Y,Y_test)))
   outcome_name <- "Y"
-
+  
+  
+  # Check that
+  alphas_form <- all(alphas>=0 & alphas<=1)
+  if (!alphas_form) {
+    stop("Confidence levels beyond interval [0,1].")
+  }
+  
+  randomness_form <- all(random_rate>=0 & random_rate<=1)
+  if (!randomness_form) {
+    stop("Randomness levels beyond interval [0,1].")
+  }
+  n_rate <- length(random_rate) # number of random rates to test
+  
+  
   # ── Storage object  ─────────────────────────────────────────────────────────
   SL.out<- list()
+  SL.out$feature_names <- list(covariate_names, treatment_name, outcome_name)
+  SL.out$ab <- ab
   SL.out$family = family
   SL.out$df_obs <- data.frame(X, A, Y)
   colnames(SL.out$df_obs) <- c(covariate_names, treatment_name, outcome_name)
@@ -100,7 +98,7 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
   g_learner <- glearner(m, g_func = "g_rf", sl_library = NULL, num.trees = 500)
   
   SL.init1 = expert_fit_predict(train1, test, new = SL.out$df_new_sample,
-                                covariates = covariates_name,
+                                covariates = covariate_names,
                                 treatment_name=treatment_name,
                                 outcome_name=outcome_name,
                                 qlearners_list = q_learners, g_model=g_learner)
@@ -131,24 +129,24 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
   # 2.1) Train nuisances   ─────────────────────────────────────────────────────
   ## Outcome model (Q-model)
   SL.out$QAW.reg.train = SuperLearner::SuperLearner(
-    Y=train2[,outcome_name], X = train2[,c(covariates_name,treatment_name)],
+    Y=train2[,outcome_name], X = train2[,c(covariate_names,treatment_name)],
     SL.library=SL.library.nuisance, family = SL.out$family)
 
   ## Propensity score  (G-model)
-  SL.out$g.reg.train <- randomForest::randomForest(x = train2[,covariates_name],
+  SL.out$g.reg.train <- randomForest::randomForest(x = train2[,covariate_names],
                                                    y = train2[,treatment_name])
 
   # 2.2) Predict nonconformity scores (margin score) ───────────────────────────
   # Nonconformity scores on calibration data
   potential_outcomes_test <- do.call(cbind,lapply(1:m, function(val) {
-    new_data <- test[, c(covariates_name, treatment_name)]
+    new_data <- test[, c(covariate_names, treatment_name)]
     new_data[,treatment_name] <- factor(val, levels=levels_A)
     SuperLearner::predict.SuperLearner(SL.out$QAW.reg.train, newdata = new_data)$pred}))
   margin_po <-  margin_score(potential_outcomes_test) # score for all potential outcomes from test
 
   # Nonconformity scores on new data (used to generate sets)
   potential_outcomes_new <- do.call(cbind,lapply(1:m, function(val) {
-    new_data <- SL.out$df_new[, c(covariates_name, treatment_name)]
+    new_data <- SL.out$df_new[, c(covariate_names, treatment_name)]
     new_data[,treatment_name] <- factor(val, levels=levels_A)
     SuperLearner::predict.SuperLearner(SL.out$QAW.reg.train, newdata = new_data)$pred}))
   SL.out$new_scores <- margin_score(potential_outcomes_new)  # score for all potential outcomes from new data
@@ -187,21 +185,21 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
   treatment[cbind(1:nrow(treatment), c(train1[, treatment_name],
                                        train2[, treatment_name]))] <- 1
   model <- grf::regression_forest(
-    X = cbind(rbind(train1, train2)[, covariates_name], treatment),
+    X = cbind(rbind(train1, train2)[, covariate_names], treatment),
     Y = rbind(train1, train2)[, outcome_name])
   
   for(i in 1:length(alphas)){
     alpha <- alphas[i]
-    alpha_key <- as.character(alpha) 
+    alpha_key <- paste0("alpha=",alpha)
     confidence_sets[["conformal"]][[alpha_key]] <- list()
     for (r in 1:ncol(SL.out$rate_cal_labels_unweighted)){
+      r_key <- paste0("r=",random_rate[r])
       # conformal set-valued policy learning
       quant <- stats::quantile(SL.out$rate_scores_unweighted_cal[, r], (1-alpha))
       binary_confidence_set <-  ifelse(SL.out$new_scores<quant, 1, 0)
       idx <- which(binary_confidence_set  != 0, arr.ind = TRUE)
-      confidence_sets[["conformal"]][[alpha_key]][[r]]  <- split(idx[, "col"],
-                              factor(idx[, "row"],
-                                     levels = seq_len(nrow(binary_confidence_set))))
+      confidence_sets[["conformal"]][[alpha_key]][[r_key]]  <- heatmap_treatments(
+        split(idx[, "col"], factor(idx[, "row"],levels = seq_len(nrow(binary_confidence_set)))), levels_A) %>% as.matrix()
     }
     lowers <- uppers <- lowers_test <- uppers_test <- matrix(0,
                                                              nrow=nrow(SL.out$df_new),
@@ -210,7 +208,7 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
     for (l in as.numeric(levels_A)){
       treatment_l <- matrix(0, nrow=nrow(SL.out$df_new), ncol=m)
       treatment_l[,l] <- 1
-      data_l <- data.frame(SL.out$df_new[,covariates_name], Treatment=treatment_l)
+      data_l <- data.frame(SL.out$df_new[,covariate_names], Treatment=treatment_l)
       pred <- stats::predict(model, newdata = data_l, estimate.variance = TRUE)
       se <- sqrt(pred$variance.estimates)
       lowers[,l] <- pred$predictions - z * se
@@ -219,7 +217,8 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
     uppest_lrw_bound <- apply(lowers, 1, max)
     C_set_binary_naive <- ifelse(uppers>=uppest_lrw_bound, 1, 0)
     indices_naive <- which(C_set_binary_naive != 0, arr.ind = TRUE)
-    confidence_sets[["GLB"]][[alpha_key]] <- split(indices_naive[, "col"], indices_naive[, "row"])
+    confidence_sets[["GLB"]][[alpha_key]] <- heatmap_treatments(
+      split(indices_naive[, "col"], indices_naive[, "row"]), levels_A) %>% as.matrix()
   }
   return(list(SL.out=SL.out, confidence_sets=confidence_sets))
 }
