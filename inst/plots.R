@@ -75,6 +75,7 @@ model <- grf::regression_forest(
   X = cbind(rbind(train1, train2)[, covariates_name], treatment),
   Y = rbind(train1, train2)[, outcome_name])
 
+# 3.2) Generate and evaluate set-valued policies  ──────────────────────────────
 for(i in 1:length(alphas)){
   alpha <- alphas[i]
   for (r in 1:ncol(SL.out$rate_cal_labels_unweighted)){

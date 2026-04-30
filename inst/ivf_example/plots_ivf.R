@@ -59,6 +59,7 @@ ggplot2::ggsave(ecdf_plot,
 
 mean_cardinality <- array(0, dim=c(length(alphas), 2,
                              ncol(SL.out$rate_cal_labels_unweighted)))
+n_test <- 50
 spv_y_random <- spv_y_min <- spv_xi_random <- spv_xi_min <- array(0, dim=c(length(alphas), n_test, 2,
                      ncol(SL.out$rate_cal_labels_unweighted)))
 
@@ -75,6 +76,7 @@ model <- grf::regression_forest(
   X = cbind(rbind(train1, train2)[, covariates_name], treatment),
   Y = rbind(train1, train2)[, outcome_name])
 
+# 3.2) Generate and evaluate set-valued policies  ──────────────────────────────
 for(i in 1:length(alphas)){
   alpha <- alphas[i]
   for (r in 1:ncol(SL.out$rate_cal_labels_unweighted)){
@@ -88,7 +90,7 @@ for(i in 1:length(alphas)){
 
     mean_cardinality[i,1,r]<- width(pred_set = confidence_set)
     heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set, levels_A) %>% as.matrix()
-    spv_results <- ivf_set_policy_values(confidence_set, ab = ab, ab_xi=ab_xi,
+    spv_results <- ivf_set_policy_values(confidence_set, ab = ab, ab_xi=ab_xi, n_test = n_test, 
                                          test= SL.out$df_new, levels=levels_A,
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
@@ -125,7 +127,7 @@ for(i in 1:length(alphas)){
   heatmaps_r[,,i,r,2] <- heatmap_treatments(naive.confidence_set, levels_A) %>% as.matrix()
   spv_results <- ivf_set_policy_values(naive.confidence_set, ab = ab, ab_xi=ab_xi,
                                        test= SL.out$df_new, levels=levels_A,
-                                       treatment_name = treatment_name,
+                                       treatment_name = treatment_name, n_test = n_test, 
                                        outcome_name = outcome_name,
                                        covariates = covariates_name,
                                        second_outcome = second_outcome_name,
@@ -195,7 +197,16 @@ spv_data_xi <- bind_rows( make_block(1, "Unweighted", results[["spv_xi_random"]]
     type = paste0(random_rate[1])
   )}))
 
-spv_data <- list(spv_data_Y, spv_data_xi) %>%
+spv_means_Y <- spv_data_Y %>%
+  dplyr::group_by(mechanism, level, type, choice) %>%
+  dplyr::summarise(value_Y = mean(value_Y, na.rm = TRUE),.groups = "drop")
+
+spv_means_xi <- spv_data_xi %>%
+  dplyr::group_by(mechanism, level, type, choice) %>%
+  dplyr::summarise(value_xi = mean(value_xi, na.rm = TRUE),.groups = "drop")
+
+
+spv_data <- list(spv_means_Y, spv_means_xi) %>%
   reduce(full_join, by = c("mechanism","level", "type", "choice")) %>%
   mutate(color_group = case_when(
     mechanism == "Unweighted" ~ paste0("type_", type),
@@ -218,22 +229,27 @@ spv_classic<- ivf_set_policy_values(SL.out$doptFactorPredict_new,
 type_vals <- sort(unique(spv_data$type))
 hline_labels <- data.frame(
     x = 1, xend = max(spv_data$level),
-    y = spv_classic[["results_random_Y"]],
+    y = spv_classic[["results_random_Y"]]  ,
     type = c("Classic policy"),
     fill = scales::hue_pal()(1))
 
 # Mean cardinality of set-valued policies
+alpha_map <- data.frame(
+  row_id = seq_along(alphas),
+  actual_alpha = alphas
+)
+
 mean_cardinality_data <- dplyr::bind_rows(
-  make_smaller_block(1, "Unweighted", results[["mean_cardinality"]], random_rate) %>%
-    group_by(mechanism,type)%>%
-    mutate(levels=(row_number()-1)/(length(alphas)-1)) %>% ungroup(),
+  make_smaller_block(1, "Unweighted", results[["mean_cardinality"]], random_rate),
   data.frame(
     value = results[["mean_cardinality"]][, 2, 1],
     mechanism = "GLB",
     type = paste0(random_rate[1])
-  ) %>% dplyr::group_by(mechanism,type)%>%
-    dplyr::mutate(levels=(row_number()-1)/(length(alphas)-1))%>%
-    dplyr::ungroup() ) %>%
+  )
+) %>%
+  group_by(mechanism, type) %>%
+  mutate(levels = alphas[row_number()]) %>%
+  ungroup() %>%
   mutate(color_group = case_when(
     mechanism == "Unweighted" ~ paste0("type_", type),
     mechanism == "GLB" ~ "GLB"
@@ -274,6 +290,11 @@ ggplot2::ggsave(spv_plot,
                 filename=paste0("inst/images/spv_plot_Y_",type,".pdf"),
                 width = 30, height = 15)
 
+hline_labels_xi <- data.frame(
+  x = 1, xend = max(spv_data$level),
+  y = spv_classic[["results_random_xi"]],
+  type = c("Classic policy"),
+  fill = scales::hue_pal()(1))
 
 spv_plot_xi <- ggplot2::ggplot(spv_data,
                             ggplot2::aes(x = factor(level),
@@ -283,7 +304,7 @@ spv_plot_xi <- ggplot2::ggplot(spv_data,
                      position = position_dodge(width = 0.75)) +
   ggplot2::geom_point(ggplot2::aes(group = color_group),
                       position = position_dodge(width = 0.75)) +
-  ggplot2::geom_segment(data = hline_labels,
+  ggplot2::geom_segment(data = hline_labels_xi,
                         ggplot2::aes(x = x, xend = xend, y = y, yend = y, color="red"),
                         linetype = "dashed", linewidth = 1) +
   scale_color_manual(
@@ -378,7 +399,10 @@ for (t in 1:dim(heatmaps_r)[5]){
   for (i in 1:dim(heatmaps_r)[3]){
     plots <- list()
     for (r in 1:dim(heatmaps_r)[4]){
-      file <- as.data.frame(heatmaps_r[,,i,r,t]) %>%
+      colnames(heatmaps_r[,,i,r,t]) <- levels_A
+      file <- as.data.frame(heatmaps_r[,,i,r,t]) 
+      colnames(file) <- levels_A
+      file <- file %>%
         mutate(row_id = row_number()) %>%
         pivot_longer(cols = -row_id, names_to = "column_m", values_to = "value")
       plots[[r]] <- ggplot(file, aes(x = column_m, y = row_id, fill = factor(value))) +

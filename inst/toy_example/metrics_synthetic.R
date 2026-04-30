@@ -78,7 +78,8 @@ cov_unif <- mean_cardinality <- cov_relaxed <- array(0, dim=c(length(alphas), 3,
 
 spv<- array(0, dim=c(length(alphas), 1, 3,
                                   ncol(SL.out$rate_cal_labels_unweighted)))
-heatmaps_r <- array(0, dim=c(nrow(SL.out$df_new_sample), m, length(alphas),ncol(SL.out$rate_cal_labels_unweighted),3))
+heatmaps_r <- array(0, dim=c(nrow(SL.out$df_new_sample), m, length(alphas),
+                             ncol(SL.out$rate_cal_labels_unweighted),3))
 
 # For greatest-lower bound (GLB)
 treatment<- matrix(0, nrow=nrow(rbind(train1, train2)), ncol=m)
@@ -88,6 +89,7 @@ model <- grf::regression_forest(
   X = cbind(rbind(train1, train2)[, covariates_name], treatment),
   Y = rbind(train1, train2)[, outcome_name])
 
+# 3.2) Generate and evaluate set-valued policies  ──────────────────────────────
 for(i in 1:length(alphas)){
   alpha <- alphas[i]
   for (r in 1:ncol(SL.out$rate_cal_labels_unweighted)){
