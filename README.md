@@ -16,7 +16,7 @@ on conditional outcomes.
 * (ii) *conformal set-valued policy learning*: Based on conformal prediction under 
 label noise.
 
-*Reference*: [1] Anonymous Authors. (2026). Set-Valued Policy Learning. [Link].
+[1] Anonymous Authors. (2026). Set-Valued Policy Learning. [Link].
 
 ## Repository structure 
 This repository follows the R package structure to handle dependencies, 
