@@ -46,6 +46,7 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
                                         list(type = "drql", q_func = "q_sl", sl_library = "SL.xgboost")),
                                       SL.library.nuisance = c("SL.mean", "SL.glm","SL.ranger", "SL.xgboost")){
 
+  `%>%`<- magrittr::`%>%`
   # ── Data sanity checks ──────────────────────────────────────────────────────
   # Check no missing data
   if (any(is.na(X)) || any(is.na(Y)) || 
@@ -158,7 +159,7 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
                                              levels = as.numeric(levels_A))
 
   unweighted_cal <- apply(
-    apply(unweighted_probs, 1, function(x){rmultinom(1, 1, prob=x)}),
+    apply(unweighted_probs, 1, function(x){stats::rmultinom(1, 1, prob=x)}),
     2, which.max)
 
   # ── 2) Nonconformity score model (i.e. s(X,A)) ───────────────────────

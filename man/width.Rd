@@ -7,9 +7,9 @@
 width(pred_set, levels = 1:5)
 }
 \arguments{
-\item{levels}{Vector of possible treatment levels. Defaults to \code{1:5}.}
+\item{pred_set}{A \code{list} of numeric or character vectors representing the predicted sets.}
 
-\item{true_set}{A \code{list} of numeric or character vectors representing the ground truth sets.}
+\item{levels}{Vector of possible treatment levels. Defaults to \code{1:5}.}
 }
 \value{
 A numeric value representing the mean of the prediction set across all observations.

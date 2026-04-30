@@ -1,3 +1,4 @@
+utils::globalVariables(c("val", "row_id", "exists"))
 #' Create a standard data block
 #'
 #' Reshapes a 4D array into a long-format data frame.
@@ -114,6 +115,7 @@ make_smaller_bigger_block <- function(mech_index, mech_name, array_a, alpha_vec,
 #' @param levels_A String label for the mechanism.
 #' @export
 heatmap_treatments <- function(confidence_set, levels_A){
+  `%>%`<- magrittr::`%>%`
   df <- tibble::tibble(
     row_id = 1:length(confidence_set),
     val = confidence_set
@@ -128,6 +130,6 @@ heatmap_treatments <- function(confidence_set, levels_A){
       values_from = exists,
       values_fill = 0,
       names_expand = TRUE
-    ) %>% dplyr::select(any_of(levels_A))
+    ) %>% dplyr::select(dply::any_of(levels_A))
   return(df)
 }

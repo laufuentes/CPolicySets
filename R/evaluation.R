@@ -47,7 +47,7 @@ coverage_unif <- function(true_set, pred_set) {
 #' true <- list(c(1, 2), c(3))
 #' pred <- list(c(1), c(3, 4))
 #' coverage_relaxed(true, pred)
-coverage_relaxed <- function(true_set, pred_set, levels=1:5){
+coverage_relaxed <- function(true_set, pred_set){
   if(!(is.list(pred_set) & is.list(true_set))){
     msg_list <- paste("Sets are not lists")
     warning(msg_list)
@@ -103,7 +103,7 @@ coverage_strict_single <- function(true_set, pred_set) {
 #' true <- list(c(1, 2), c(3))
 #' pred <- list(c(1), c(3, 4))
 #' coverage_strict(true, pred)
-coverage_strict <- function(true_set, pred_set, levels=1:5){
+coverage_strict <- function(true_set, pred_set){
   if(!(is.list(pred_set) & is.list(true_set))){
     msg_list <- paste("Sets are not lists")
     warning(msg_list)
@@ -124,7 +124,7 @@ coverage_strict <- function(true_set, pred_set, levels=1:5){
 #'
 #' Computes the mean width the predicted set.
 #'
-#' @param true_set A `list` of numeric or character vectors representing the ground truth sets.
+#' @param pred_set A `list` of numeric or character vectors representing the predicted sets.
 #' @param levels Vector of possible treatment levels. Defaults to `1:5`.
 #'
 #' @return A numeric value representing the mean of the prediction set across all observations.
@@ -306,7 +306,7 @@ set_policy_value <- function(test_set, test,
 #' @param outcome_name String indicating the outcome variable. Defaults to "Y".
 #' @param second_outcome String indicating the second outcome variable. Defaults to "xi".
 #' @param mod_y Model to predict the conditional mean outcome.
-#' @param mod_y Model to predict the conditional mean of the second outcome.
+#' @param mod_xi Model to predict the conditional mean of the second outcome.
 #' @param mod_ps Model to predict the propensity score.
 #' @param ab Float indicating the largest difference in the outcome.
 #' @param ab_xi Float indicating the largest difference in the second outcome.

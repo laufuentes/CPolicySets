@@ -4,7 +4,7 @@
 \alias{coverage_strict}
 \title{Strict coverage}
 \usage{
-coverage_strict(true_set, pred_set, levels = 1:5)
+coverage_strict(true_set, pred_set)
 }
 \arguments{
 \item{true_set}{A \code{list} of numeric or character vectors representing the ground truth sets.}

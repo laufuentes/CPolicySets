@@ -33,7 +33,9 @@ ivf_set_policy_values(
 
 \item{second_outcome}{String indicating the second outcome variable. Defaults to "xi".}
 
-\item{mod_y}{Model to predict the conditional mean of the second outcome.}
+\item{mod_y}{Model to predict the conditional mean outcome.}
+
+\item{mod_xi}{Model to predict the conditional mean of the second outcome.}
 
 \item{mod_ps}{Model to predict the propensity score.}
 

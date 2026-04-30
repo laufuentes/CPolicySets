@@ -1,3 +1,4 @@
+utils::globalVariables(c("..covariates"))
 #' Q-model builder for Policy Learning
 #'
 #' A wrapper function to build Q-models required for training policies using the 
@@ -22,7 +23,7 @@
 make_q_model <- function(q_func, covariates=c("x1","x2"), sl_library = NULL, action_name = "A") {
   formula_obj <- stats::reformulate(covariates)
   switch(q_func,
-         "q_glm" = polle::q_glm(formula = formula_obj, family = gaussian()),
+         "q_glm" = polle::q_glm(formula = formula_obj, family = stats::gaussian()),
          "q_rf" = polle::q_rf(formula = formula_obj),
          "q_xgboost" = polle::q_xgboost(formula = formula_obj),
          "q_sl" = {
@@ -233,11 +234,11 @@ expert_fit_predict <- function(train, test, new = NULL,
       
       # Make policytree prediction 
       expert_policies[[name]] <- as.numeric( # test 
-        predict(tree, as.matrix(test[, ..covariates]))
+        stats::predict(tree, as.matrix(test[, ..covariates]))
         )
       if (!is.null(new))  # new data  
         expert_policies_new[[name]] <- as.numeric(
-          predict(tree, as.matrix(new[, ..covariates]))
+          stats::predict(tree, as.matrix(new[, ..covariates]))
           )
     
     # polle learners 

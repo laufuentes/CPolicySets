@@ -102,24 +102,24 @@ generate_data <- function(n, ncov=2, seed=NA, type=c("normal", "complex"), is_RC
     if(type=="normal"){
       beta_low_vec  <- c(10,10,1,3,2)  # 1,2 high
       beta_high_vec <- c(2,1,10,10,4)  # 3,4 low 
-      w <- plogis(X[,1] + X[,2] - 0.5)
+      w <- stats::plogis(X[,1] + X[,2] - 0.5)
       beta <- (1 - w) * matrix(beta_low_vec,  nrow=nrow(X), ncol=5, byrow=TRUE) +
         w * matrix(beta_high_vec, nrow=nrow(X), ncol=5, byrow=TRUE)
-      epsilon <- matrix(rnorm(nrow(X) * 5), nrow=nrow(X), ncol=5)
+      epsilon <- matrix(stats::rnorm(nrow(X) * 5), nrow=nrow(X), ncol=5)
       
       treatment_assignment <- beta + epsilon
       
       probs <- exp(treatment_assignment - apply(treatment_assignment, 1, max))
       expit_treatment <- probs / rowSums(probs)
       
-      A <- t(apply(expit_treatment, 1, function(p) rmultinom(1, 1, p)))
+      A <- t(apply(expit_treatment, 1, function(p) stats::rmultinom(1, 1, p)))
     }else{
       beta_high <- c(4, 10, 4, 2, 4)  # treatment 2 and then a bit of 1 and 4
       beta_medium <- c(10, 2, 2, 10, 15) # treatment 4, 1 and 5 and a bit of the others 
       beta_low <- c(4, 2, 10, 4, 2)  # treatment 3 and then a bit of 1 and 4
       z_axis <- X[,1] - X[,2]
-      w_low  <- plogis(5*(z_axis - 0.25))
-      w_high  <- plogis(5*(-z_axis - 0.5))
+      w_low  <- stats::plogis(5*(z_axis - 0.25))
+      w_high  <- stats::plogis(5*(-z_axis - 0.5))
       w_medium <- pmax(0, 1 - (w_high + w_low))
       total_w  <- w_low + w_medium + w_high
       
@@ -127,11 +127,11 @@ generate_data <- function(n, ncov=2, seed=NA, type=c("normal", "complex"), is_RC
         (w_high/total_w) * matrix(beta_high, nrow=nrow(X), ncol=5, byrow=TRUE) + 
         (w_medium/total_w) * matrix(beta_medium, nrow=nrow(X), ncol=5, byrow=TRUE)
       
-      epsilon <- matrix(rnorm(nrow(X) * 5), nrow=nrow(X), ncol=5)
+      epsilon <- matrix(stats::rnorm(nrow(X) * 5), nrow=nrow(X), ncol=5)
       treatment_assignment <- beta + epsilon
       probs <- exp(treatment_assignment - apply(treatment_assignment, 1, max))
       expit_treatment <- probs / rowSums(probs)
-      A <- t(apply(expit_treatment, 1, function(p) rmultinom(1, 1, p)))
+      A <- t(apply(expit_treatment, 1, function(p) stats::rmultinom(1, 1, p)))
     }
   }
   A_int <- max.col(A)
@@ -143,7 +143,7 @@ generate_data <- function(n, ncov=2, seed=NA, type=c("normal", "complex"), is_RC
   }else{
     potential_outcomes <- mu_P0_normal(X)
   }
-   Y_obs <- rowSums(potential_outcomes*A) + 0.5*rnorm(n, sd = 1)
+   Y_obs <- rowSums(potential_outcomes*A) + 0.5*stats::rnorm(n, sd = 1)
    optimal_policy <- lapply(seq_len(nrow(potential_outcomes)),
                             function(i){
                               which(potential_outcomes[i, ] == max(potential_outcomes[i, ]))})
