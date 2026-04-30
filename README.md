@@ -11,9 +11,9 @@ decision. This approach is designed to provide formal coverage guarantees—ensu
 that the optimal treatment are included in set-valued policies.
 
 This repository implements the two methods presented in the paper:
-* (i) *Greatest lower bound* (GLB): Based on upper and lower confidence bounds 
+*  *Greatest lower bound* (GLB): Based on upper and lower confidence bounds 
 on conditional outcomes.
-* (ii) *conformal set-valued policy learning*: Based on conformal prediction under 
+*  *conformal set-valued policy learning*: Based on conformal prediction under 
 label noise.
 
 [1] Anonymous Authors. (2026). Set-Valued Policy Learning. 
