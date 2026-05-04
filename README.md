@@ -7,7 +7,7 @@ in the manuscript.
 ## Introduction
 We implement set-valued policy learning as proposed in [1], where 
 the learning algorithm outputs a set of candidate treatments rather than a single 
-decision. This approach is designed to provide formal coverage guarantees—ensuring 
+decision. This approach is designed to provide formal coverage guarantees, ensuring 
 that the optimal treatment are included in set-valued policies.
 
 This repository implements the two methods presented in the paper:
