@@ -25,8 +25,10 @@ density_plot <- ggplot2::ggplot(SL.out$data_toghether,
   #                              state_length = 1) + # remove for GIF
   ggplot2::labs(y = "Density",
                 color = "Type of labels",
-                linetype = "Score Type")#+gganimate::ease_aes('linear')
-
+                linetype = "Score Type")+#+gganimate::ease_aes('linear')
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 14))
 ggplot2::ggsave(density_plot,
                 filename=paste0("inst/images/density_",type,".pdf"),
                 width = 10, height = 8)
@@ -45,7 +47,10 @@ ecdf_plot <- ggplot2::ggplot(SL.out$data_toghether,
     values = color_values,
     labels = label_values
   ) +
-  ggplot2::labs(y = "ECDF", x = "Value")
+  ggplot2::labs(y = "ECDF", x = "Value")+
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(ecdf_plot,
                 filename=paste0("inst/images/ecdf_",type,".pdf"),
@@ -207,7 +212,9 @@ spv_plot <- ggplot2::ggplot(spv_data,
   ggplot2::labs(x = expression("Confidence level ("* alpha *")"),
                 y = "Set policy value (SPV)",
                 color = "Legend") +
-  ggplot2::theme_minimal()
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(spv_plot,
                 filename=paste0("inst/images/spv_plot_",type,".pdf"),
@@ -241,7 +248,9 @@ mean_cardinality_plot <- ggplot2::ggplot(data=mean_cardinality_data,
   ) +
   ggplot2::labs(x = expression("Confidence level ("* alpha *")"),
                 y = "Mean cardinality") +
-  ggplot2::theme_minimal()
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(mean_cardinality_plot,
                 filename=paste0("inst/images/width_boxplots_", type, ".pdf"),
@@ -267,7 +276,10 @@ for (t in 1:dim(heatmaps_r)[5]){
         ggplot2::labs(title = paste0("r: ", random_rate[r]),
              x = "Treatment levels",
              y = "Observations",
-             fill = "Present")
+             fill = "Present")+
+        ggplot2::theme(
+          axis.title = ggplot2::element_text(size = 16),
+          legend.title = ggplot2::element_text(size = 14))
     }
     plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, 
                                                    ncol = dim(heatmaps_r)[4], 
