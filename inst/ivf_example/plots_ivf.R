@@ -218,13 +218,14 @@ spv_data_xi <- dplyr::bind_rows(
 
 spv_means_Y <- spv_data_Y %>%
   dplyr::group_by(mechanism, level, type, choice) %>%
-  dplyr::summarise(value_Y = mean(value_Y, na.rm = TRUE),
-                  sd_spv_Y = sd(value_Y, na.rm = TRUE),.groups = "drop")
+  dplyr::summarise(
+    sd_spv_Y = sd(value_Y, na.rm = TRUE),
+    value_Y = mean(value_Y, na.rm = TRUE),.groups = "drop")
 
 spv_means_xi <- spv_data_xi %>%
   dplyr::group_by(mechanism, level, type, choice) %>%
-  dplyr::summarise(value_xi = mean(value_xi, na.rm = TRUE),
-                   sd_spv_xi = sd(value_xi, na.rm = TRUE), .groups = "drop")
+  dplyr::summarise(sd_spv_xi = sd(value_xi, na.rm = TRUE),
+                   value_xi = mean(value_xi, na.rm = TRUE),.groups = "drop")
 
 
 spv_data <- list(spv_means_Y, spv_means_xi) %>%
