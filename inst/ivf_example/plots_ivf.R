@@ -364,7 +364,7 @@ spv_Y_xi_plot <- ggplot2::ggplot(spv_data %>% filter(level==level_choice),
                                          color = color_group,
                                          group=color_group)) +
   ggplot2::geom_point(aes(shape=choice), size=7) +
-  ggplot2::geom_line(aes(group=color_group), linewith=1.5)+
+  ggplot2::geom_line(aes(group=color_group), linewidth=1.5)+
   ggplot2::scale_color_manual(
     name = "Technique",
     values = c(
