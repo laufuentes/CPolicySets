@@ -301,7 +301,8 @@ plot_spv_level <- ggplot2::ggplot(plot_data,
        y = "Set Policy Value (SPV)")+ 
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 ggplot2::ggsave(plot_spv_level, filename=paste0("inst/images/Level_SPV_", type,".pdf"), width = 15, height = 8)
 
 plot_cov_level <- ggplot2::ggplot(plot_data,
@@ -332,7 +333,8 @@ plot_cov_level <- ggplot2::ggplot(plot_data,
        y = expression("Coverage attained")) + 
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 ggplot2::ggsave(plot_cov_level, filename=paste0("inst/images/Level_Coverage_", type,".pdf"), width = 15, height = 8)
 
 plot_cov_factor_level <- ggplot2::ggplot(plot_data,
@@ -362,7 +364,8 @@ plot_cov_factor_level <- ggplot2::ggplot(plot_data,
        y = "Marginal coverage factor")+
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 ggplot2::ggsave(plot_cov_factor_level, filename=paste0("inst/images/Level_cov_factor_", type,".pdf"), width = 15, height = 8)
 
 plot_width_spv <- ggplot2::ggplot(plot_data,
@@ -394,7 +397,8 @@ plot_width_spv <- ggplot2::ggplot(plot_data,
        y = "Set Policy Value (SPV)") + 
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 ggplot2::ggsave(plot_width_spv, filename=paste0("inst/images/mean_cardinality_SPV_", type,".pdf"), width = 15, height = 8)
 
 plot_mean_level<- ggplot2::ggplot(plot_data,
@@ -422,7 +426,9 @@ plot_mean_level<- ggplot2::ggplot(plot_data,
        y = "Mean cardinality")+  
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14)
+    )
 ggplot2::ggsave(plot_mean_level, filename=paste0("inst/images/mean_cardinality_level_", type,".pdf"), width = 15, height = 8)
 
 
@@ -455,7 +461,8 @@ plot_sythetic_scenario <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y,
       fill = "Optimal treatments") + 
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(plot_sythetic_scenario, 
                 filename=paste0("inst/images/Synthetic_data_", type,".pdf"), 

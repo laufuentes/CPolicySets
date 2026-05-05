@@ -203,7 +203,8 @@ expert_fit_predict <- function(train, test, new = NULL,
                                  covariates = covariates, utility = outcome_name)
   pd_new   <- if (!is.null(new))
     polle::policy_data(new, action = treatment_name, 
-                       covariates = covariates, utility = outcome_name)
+                       covariates = covariates, 
+                       utility = outcome_name)
   else NULL
   
   expert_policies     <- list()
@@ -238,8 +239,7 @@ expert_fit_predict <- function(train, test, new = NULL,
         )
       if (!is.null(new))  # new data  
         expert_policies_new[[name]] <- as.numeric(
-          stats::predict(tree, as.matrix(new[, ..covariates]))
-          )
+          stats::predict(tree, as.matrix(new[, ..covariates])))
     
     # polle learners 
     } else if (learner$type == "ql") {

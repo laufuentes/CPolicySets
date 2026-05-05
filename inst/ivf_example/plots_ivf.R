@@ -28,7 +28,8 @@ density_plot <- ggplot2::ggplot(SL.out$data_toghether,
                 linetype = "Score Type")+#+gganimate::ease_aes('linear')
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(density_plot,
                 filename=paste0("inst/images/density_",type,".pdf"),
@@ -36,7 +37,8 @@ ggplot2::ggsave(density_plot,
 
 # ECDF plot
 ecdf_plot <- ggplot2::ggplot(SL.out$data_toghether,
-                             ggplot2::aes(x = value, color = paste0("type_", type))) +
+                             ggplot2::aes(x = value, 
+                                          color = paste0("type_", type))) +
   ggplot2::stat_ecdf(geom = "step", linewidth = 1) +
   ggplot2::stat_ecdf(data = behavioral_data,
                      ggplot2::aes(x = value, color = "Behavioral policy"),
@@ -51,7 +53,8 @@ ecdf_plot <- ggplot2::ggplot(SL.out$data_toghether,
   ggplot2::labs(y = "ECDF", x = "Value")+
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(ecdf_plot,
                 filename=paste0("inst/images/ecdf_",type,".pdf"),
@@ -96,7 +99,8 @@ for(i in 1:length(alphas)){
 
     mean_cardinality[i,1,r]<- width(pred_set = confidence_set)
     heatmaps_r[,,i,r,1] <- heatmap_treatments(confidence_set, levels_A) %>% as.matrix()
-    spv_results <- ivf_set_policy_values(confidence_set, ab = ab, ab_xi=ab_xi, n_test = n_test, 
+    spv_results <- ivf_set_policy_values(confidence_set, ab = ab, ab_xi=ab_xi, 
+                                         n_test = n_test, 
                                          test= SL.out$df_new, levels=levels_A,
                                          treatment_name = treatment_name,
                                          outcome_name = outcome_name,
@@ -118,8 +122,10 @@ for(i in 1:length(alphas)){
   for (l in as.numeric(levels_A)){
     treatment_l <- matrix(0, nrow=nrow(SL.out$df_new), ncol=m)
     treatment_l[,l] <- 1
-    data_l <- data.frame(SL.out$df_new[,covariates_name], Treatment=treatment_l)
-    pred <- stats::predict(model, newdata = data_l, estimate.variance = TRUE)
+    data_l <- data.frame(SL.out$df_new[,covariates_name], 
+                         Treatment=treatment_l)
+    pred <- stats::predict(model, newdata = data_l, 
+                           estimate.variance = TRUE)
     se <- sqrt(pred$variance.estimates)
     lowers[,l] <- pred$predictions - z * se
     uppers[,l] <- pred$predictions + z * se
@@ -127,17 +133,23 @@ for(i in 1:length(alphas)){
   uppest_lrw_bound <- apply(lowers, 1, max)
   C_set_binary_naive <- ifelse(uppers>=uppest_lrw_bound, 1, 0)
   indices_naive <- which(C_set_binary_naive != 0, arr.ind = TRUE)
-  naive.confidence_set <- split(indices_naive[, "col"], indices_naive[, "row"])
+  naive.confidence_set <- split(indices_naive[, "col"], 
+                                indices_naive[, "row"])
 
   mean_cardinality[i,2,]<- width(pred_set = naive.confidence_set)
-  heatmaps_r[,,i,r,2] <- heatmap_treatments(naive.confidence_set, levels_A) %>% as.matrix()
-  spv_results <- ivf_set_policy_values(naive.confidence_set, ab = ab, ab_xi=ab_xi,
-                                       test= SL.out$df_new, levels=levels_A,
-                                       treatment_name = treatment_name, n_test = n_test, 
+  heatmaps_r[,,i,r,2] <- heatmap_treatments(naive.confidence_set, levels_A) %>% 
+    as.matrix()
+  spv_results <- ivf_set_policy_values(naive.confidence_set, ab = ab, 
+                                       ab_xi=ab_xi,
+                                       test= SL.out$df_new, 
+                                       levels=levels_A,
+                                       treatment_name = treatment_name, 
+                                       n_test = n_test, 
                                        outcome_name = outcome_name,
                                        covariates = covariates_name,
                                        second_outcome = second_outcome_name,
-                                       mod_y=SL.out$QAW.reg.train, mod_xi = SL.out$QxiAW.reg.train,
+                                       mod_y=SL.out$QAW.reg.train, 
+                                       mod_xi = SL.out$QxiAW.reg.train,
                                        mod_ps = SL.out$g.reg.train)
   spv_y_random[i,,2,]<- spv_results[["results_random_Y"]]
   spv_xi_random[i,,2,]<- spv_results[["results_random_xi"]]
@@ -293,7 +305,8 @@ spv_plot <- ggplot2::ggplot(spv_data,
                 color = "Legend") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(spv_plot,
                 filename=paste0("inst/images/spv_plot_Y_",type,".pdf"),
@@ -334,7 +347,8 @@ spv_plot_xi <- ggplot2::ggplot(spv_data,
                 color = "Legend") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(spv_plot_xi,
                 filename=paste0("inst/images/spv_plot_xi_",type,".pdf"),
@@ -366,7 +380,8 @@ spv_Y_xi_plot <- ggplot2::ggplot(spv_data %>% filter(level==level_choice),
                 color = "Legend") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(spv_Y_xi_plot,
                 filename=paste0("inst/images/spv_plot_Yxi_",type,".pdf"),
@@ -399,7 +414,8 @@ mean_cardinality_plot <- ggplot2::ggplot(data=mean_cardinality_data,
                 y = "Mean cardinality") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(mean_cardinality_plot,
                 filename=paste0("inst/images/width_boxplots_", type, ".pdf"),
@@ -432,7 +448,8 @@ for (t in 1:dim(heatmaps_r)[5]){
              fill = "Present")+ 
         ggplot2::theme(
           axis.title = ggplot2::element_text(size = 16),
-          legend.title = ggplot2::element_text(size = 14))
+          legend.title = ggplot2::element_text(size = 16), 
+          legend.text = ggplot2::element_text(size = 14))
     }
     plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = dim(heatmaps_r)[4], top = paste0("Alpha = ", alphas[i]))
   }

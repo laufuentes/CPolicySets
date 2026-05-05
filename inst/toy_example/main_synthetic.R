@@ -169,8 +169,10 @@ for (n in n_samples){
   if(expert_technique!= "personalized"){
     SL.init1 = expert_fit_predict(train1, test, new = SL.out$df_new_sample,
                                   covariates = covariates_name,
-                                  treatment_name=treatment_name, outcome_name=outcome_name,
-                                  qlearners_list = q_learners, g_model=g_learner)
+                                  treatment_name=treatment_name, 
+                                  outcome_name=outcome_name,
+                                  qlearners_list = q_learners, 
+                                  g_model=g_learner)
 
     SL.out$libraryNames <- SL.init1[["learner_names"]] # expert names
     numalgs <- length(SL.out$libraryNames) # number of experts
@@ -209,7 +211,8 @@ for (n in n_samples){
     pred_new_data <- NULL # replace with predictions on new
     SL.out$doptFactorPredict_new <- array(as.numeric(pred_new_data),
                                           dim = c(length(pred_new_data), numalgs),
-                                          dimnames = list(NULL, SL.out$libraryNames))
+                                          dimnames = list(NULL, 
+                                                          SL.out$libraryNames))
   }
 
   # Generate noisy calibration labels
@@ -217,7 +220,10 @@ for (n in n_samples){
                                              weights =rep(1/numalgs, numalgs),
                                              df_pred = test,
                                              levels = as.numeric(levels_A))
-  unweighted_cal <- apply(apply(unweighted_probs, 1, function(x){rmultinom(1,1,prob=x)}),2,which.max)
+  unweighted_cal <- apply(apply(unweighted_probs, 1, function(x){
+    rmultinom(1,1,prob=x)}),
+    2,
+    which.max)
 
   # ── 2) Nonconformity score model (i.e. s(X,A)) ───────────────────────
   # Training performed on train2

@@ -194,17 +194,21 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
 
   # ── 3) Noisy calibration  ───────────────────────────────────────────────────
   # 3.1) Generate perturbed labels  ────────────────────────────────────────────
-  SL.out$rate_cal_labels_unweighted <- SL.out$rate_scores_unweighted_cal<- matrix(0,nrow=nrow(test), ncol=n_rate)
+  SL.out$rate_cal_labels_unweighted <- SL.out$rate_scores_unweighted_cal<-
+    matrix(0,nrow=nrow(test), ncol=n_rate)
   SL.out$rate_scores_unweighted_true <- matrix(0,nrow=nrow(test), ncol=n_rate)
   for(i in 1:length(random_rate)){
     rate <- random_rate[i] # randomness level r
     mix_factor<- stats::rbinom(nrow(test),1,prob=rate) # R ~ Ber(r)
     # Combine noisy labels with random
-    SL.out$rate_cal_labels_unweighted[,i]<- mix_factor*A_rd +  (1-mix_factor)*unweighted_cal
+    SL.out$rate_cal_labels_unweighted[,i]<- mix_factor*A_rd +  
+      (1-mix_factor)*unweighted_cal
     # Compute associated scores
-    SL.out$rate_scores_unweighted_cal[,i] <- margin_po[cbind(1:nrow(test), SL.out$rate_cal_labels_unweighted[,i])]
+    SL.out$rate_scores_unweighted_cal[,i] <- margin_po[cbind(1:nrow(test), 
+                                                             SL.out$rate_cal_labels_unweighted[,i])]
   }
-  SL.out$rate_cal_labels_behavioral <- margin_po[cbind(1:nrow(test), test[,treatment_name])]
+  SL.out$rate_cal_labels_behavioral <- margin_po[cbind(1:nrow(test), 
+                                                       test[,treatment_name])]
   
   # ─── Save labels  ───────────────────────────────────────────────────────────
   data_toghether <- dplyr::bind_rows(
@@ -234,13 +238,14 @@ learn_set_valued_policies <- function(X, A, Y, X_test, A_test, Y_test,
     alpha_key <- paste0("alpha=",alpha)
     confidence_sets[["conformal"]][[alpha_key]] <- list()
     for (r in 1:ncol(SL.out$rate_cal_labels_unweighted)){
-      r_key <- paste0("r=",random_rate[r])
+      r_key <- paste0("r=", random_rate[r])
       # conformal set-valued policy learning
       quant <- stats::quantile(SL.out$rate_scores_unweighted_cal[, r], (1-alpha))
       binary_confidence_set <-  ifelse(SL.out$new_scores<quant, 1, 0)
       idx <- which(binary_confidence_set  != 0, arr.ind = TRUE)
       confidence_sets[["conformal"]][[alpha_key]][[r_key]]  <- heatmap_treatments(
-        split(idx[, "col"], factor(idx[, "row"],levels = seq_len(nrow(binary_confidence_set)))), levels_A) %>% as.matrix()
+        split(idx[, "col"], factor(idx[, "row"],levels = seq_len(nrow(binary_confidence_set)))), 
+        levels_A) %>% as.matrix()
     }
     lowers <- uppers <- lowers_test <- uppers_test <- matrix(0,
                                                              nrow=nrow(SL.out$df_new),

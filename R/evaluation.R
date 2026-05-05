@@ -115,7 +115,8 @@ coverage_strict <- function(true_set, pred_set){
   n <- length(true_set)
   coverage <- matrix(0, nrow=n)
   for(i in 1:n){
-    coverage[i] <- coverage_strict_single(true_set = true_set[[i]], pred_set= pred_set[[i]])
+    coverage[i] <- coverage_strict_single(true_set = true_set[[i]], 
+                                          pred_set= pred_set[[i]])
   }
   mean(coverage)
 }
@@ -248,7 +249,8 @@ set_policy_value <- function(test_set, test,
     allowed <- test_set[[i]]
 
     if (length(allowed) > 0) {
-      random_policy[i, ] <- allowed[sample.int(length(allowed), n_test, replace = TRUE)]
+      random_policy[i, ] <- allowed[sample.int(length(allowed), 
+                                               n_test, replace = TRUE)]
     } else {
       random_policy[i, ] <- sample.int(m, n_test, replace = TRUE)
     }

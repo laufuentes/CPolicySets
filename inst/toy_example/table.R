@@ -12,7 +12,7 @@ test <-  SL.out$df_obs[SL.out$folds[[3]],]
 alpha <- 0.1
 # levels of noise
 r_levels <- c(1,3,6,11)
-cov_unif<- mean_width <- matrix(0, ncol = length(r_levels)+2)
+cov_unif<- mean_width<- spv <- matrix(0, ncol = length(r_levels)+2)
 confidence_sets <- list()
 
 # oracular 
@@ -24,7 +24,15 @@ confidence_sets[[length(confidence_sets)+1]] <- split(true_idx[, "col"],
                                                              levels = seq_len(nrow(true_binary_confidence_set))))
 cov_unif[,length(confidence_sets)] <- coverage_unif(true_set = SL.out$optimal_policy_new, confidence_sets[[length(confidence_sets)]])
 mean_width[,length(confidence_sets)] <- width(confidence_sets[[length(confidence_sets)]])
-
+spv[,length(confidence_sets)] <- oracular_set_policy_value(confidence_sets[[length(confidence_sets)]], 
+                                                           test= SL.out$df_new,
+                                                           levels=levels_A, 
+                                                           n_test=n_test,
+                                                           treatment_name = treatment_name,
+                                                           outcome_name = outcome_name,
+                                                           covariates = covariates_name,
+                                                           test_potential_outcome= SL.out$potential_outcomes) %>% 
+  mean()
 # noisy ICP
 for (r in r_levels){
   quant <- stats::quantile(SL.out$rate_scores_unweighted_cal[, r], (1-alpha))
@@ -35,7 +43,15 @@ for (r in r_levels){
                                   levels = seq_len(nrow(binary_confidence_set))))
   cov_unif[,length(confidence_sets)] <- coverage_unif(true_set = SL.out$optimal_policy_new, confidence_sets[[length(confidence_sets)]])
   mean_width[,length(confidence_sets)] <- width(confidence_sets[[length(confidence_sets)]])
-  
+  spv[,length(confidence_sets)] <- oracular_set_policy_value(confidence_sets[[length(confidence_sets)]], 
+                                                             test= SL.out$df_new,
+                                                             levels=levels_A, 
+                                                             n_test=n_test,
+                                                             treatment_name = treatment_name,
+                                                             outcome_name = outcome_name,
+                                                             covariates = covariates_name,
+                                                             test_potential_outcome= SL.out$potential_outcomes) %>% 
+    mean()
 }
 # uppest lower bound set
 treatment<- matrix(0, nrow=nrow(rbind(train1, train2)), ncol=m)
@@ -63,6 +79,15 @@ indices_naive <- which(C_set_binary_naive != 0, arr.ind = TRUE)
 confidence_sets[[length(confidence_sets)+1]] <- split(indices_naive[, "col"], indices_naive[, "row"])
 cov_unif[,length(confidence_sets)] <- coverage_unif(true_set = SL.out$optimal_policy_new, confidence_sets[[length(confidence_sets)]])
 mean_width[,length(confidence_sets)] <- width(confidence_sets[[length(confidence_sets)]])
+spv[,length(confidence_sets)] <- oracular_set_policy_value(confidence_sets[[length(confidence_sets)]], 
+                                                           test= SL.out$df_new,
+                                                           levels=levels_A, 
+                                                           n_test=n_test,
+                                                           treatment_name = treatment_name,
+                                                           outcome_name = outcome_name,
+                                                           covariates = covariates_name,
+                                                           test_potential_outcome= SL.out$potential_outcomes) %>% 
+  mean()
 
 prop_inclusion_type_treatment <- matrix(0, 
                                         nrow=length(types_optimal_treatment), 
@@ -88,14 +113,16 @@ colnames(results_df) <- c("Oracular CP",
 results_df <- cbind("Optimal Treatments" = treatment_labels, results_df)  
 total_row <- c(paste0("Coverage ($\\alpha$ = ", alpha, ")"), cov_unif)
 width_row <- c("Mean cardinality", mean_width)
+spv_row <- c("Set-policy value (SPV)", spv)
 
-results_df <- rbind(results_df, total_row, width_row)
+
+results_df <- rbind(results_df, total_row, width_row, spv_row)
 results_df[,-1] <- lapply(results_df[,-1], function(x) as.numeric(as.character(x)))
 results_df[,-1] <- lapply(results_df[,-1], function(x) sprintf("%1.2f", x))
 
 addline <- list()
-addline$pos <- list(nrow(results_df) - 2, nrow(results_df)-1)
-addline$command <- rep("\\hline \n", 2)
+addline$pos <- list(nrow(results_df) - 3,nrow(results_df) - 2, nrow(results_df)-1)
+addline$command <- rep("\\hline \n", 3)
 
 print(xtable(results_df,
              align =  paste0("ll", paste(rep("c", ncol(results_df) - 1), 

@@ -146,7 +146,8 @@ generate_data <- function(n, ncov=2, seed=NA, type=c("normal", "complex"), is_RC
    Y_obs <- rowSums(potential_outcomes*A) + 0.5*stats::rnorm(n, sd = 1)
    optimal_policy <- lapply(seq_len(nrow(potential_outcomes)),
                             function(i){
-                              which(potential_outcomes[i, ] == max(potential_outcomes[i, ]))})
+                              which(potential_outcomes[i, ] == 
+                                      max(potential_outcomes[i, ]))})
    df <- data.frame(
      X,
      A = A_factor,
