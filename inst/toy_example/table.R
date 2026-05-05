@@ -100,7 +100,7 @@ for(c in 1:length(confidence_sets)) {
   prop_inclusion_type_treatment[, c] <- tapply(all_coverage, obs_types, mean)
 }
 treatment_labels <- sapply(types_optimal_treatment, function(x) {
-  paste0("\\Pi^{*}(X) = \\{", paste(x, collapse = ", "), "\\}")
+  paste0("$\\Pi^{*}(X)$ = \\{", paste(x, collapse = ", "), "\\}")
 })
 
 library(xtable)
