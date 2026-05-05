@@ -431,6 +431,7 @@ for (t in 1:dim(heatmaps_r)[5]){
   plots_completed <- list()
   for (i in 1:dim(heatmaps_r)[3]){
     plots <- list()
+    j <- 1 
     for (r in c(1,4,7)){
       colnames(heatmaps_r[,,i,r,t]) <- levels_A
       file <- as.data.frame(heatmaps_r[,,i,r,t]) 
@@ -440,8 +441,8 @@ for (t in 1:dim(heatmaps_r)[5]){
         tidyr::pivot_longer(cols = -row_id, names_to = "column_m", 
                             values_to = "value")
       p <- ggplot2::ggplot(file, 
-                                    ggplot2::aes(x = column_m, y = row_id, 
-                                                 fill = factor(value))) +
+                           ggplot2::aes(x = column_m, y = row_id, 
+                                        fill = factor(value))) +
         ggplot2::geom_tile() +
         ggplot2::theme_minimal() +
         ggplot2::labs(title = paste0("r= ", random_rate[r]),
@@ -456,7 +457,8 @@ for (t in 1:dim(heatmaps_r)[5]){
       if (r != 7) {
         p <- p + ggplot2::theme(legend.position = "none")
       }
-      plots[[r]] <- p
+      plots[[j]] <- p
+      j <- j + 1
       }
     plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = dim(heatmaps_r)[4], top = paste0("Alpha = ", alphas[i]))
   }
