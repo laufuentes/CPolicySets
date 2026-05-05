@@ -28,7 +28,8 @@ density_plot <- ggplot2::ggplot(SL.out$data_toghether,
                 linetype = "Score Type")+#+gganimate::ease_aes('linear')
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 ggplot2::ggsave(density_plot,
                 filename=paste0("inst/images/density_",type,".pdf"),
                 width = 10, height = 8)
@@ -50,7 +51,8 @@ ecdf_plot <- ggplot2::ggplot(SL.out$data_toghether,
   ggplot2::labs(y = "ECDF", x = "Value")+
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(ecdf_plot,
                 filename=paste0("inst/images/ecdf_",type,".pdf"),
@@ -214,7 +216,8 @@ spv_plot <- ggplot2::ggplot(spv_data,
                 color = "Legend") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(spv_plot,
                 filename=paste0("inst/images/spv_plot_",type,".pdf"),
@@ -250,7 +253,8 @@ mean_cardinality_plot <- ggplot2::ggplot(data=mean_cardinality_data,
                 y = "Mean cardinality") +
   ggplot2::theme(
     axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 14))
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
 
 ggplot2::ggsave(mean_cardinality_plot,
                 filename=paste0("inst/images/width_boxplots_", type, ".pdf"),
