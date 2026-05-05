@@ -218,11 +218,13 @@ spv_data_xi <- dplyr::bind_rows(
 
 spv_means_Y <- spv_data_Y %>%
   dplyr::group_by(mechanism, level, type, choice) %>%
-  dplyr::summarise(value_Y = mean(value_Y, na.rm = TRUE),.groups = "drop")
+  dplyr::summarise(value_Y = mean(value_Y, na.rm = TRUE),
+                  sd_spv_Y = sd(value_Y, na.rm = TRUE),.groups = "drop")
 
 spv_means_xi <- spv_data_xi %>%
   dplyr::group_by(mechanism, level, type, choice) %>%
-  dplyr::summarise(value_xi = mean(value_xi, na.rm = TRUE),.groups = "drop")
+  dplyr::summarise(value_xi = mean(value_xi, na.rm = TRUE),
+                   sd_spv_xi = sd(value_xi, na.rm = TRUE), .groups = "drop")
 
 
 spv_data <- list(spv_means_Y, spv_means_xi) %>%
@@ -458,3 +460,80 @@ for (t in 1:dim(heatmaps_r)[5]){
     filename = paste0("inst/images/", "Heatmap_", names_experts[t], "_", type, ".pdf"),
     multi_page, width = 30, height = 15)
 }
+
+plot_spv_level_error_bars_Y <- ggplot2::ggplot(spv_data,
+                                                ggplot2::aes(x = factor(level),
+                                                             y= value_Y,
+                                                             color = color_group)) +
+  ggplot2::geom_line(ggplot2::aes(group = color_group),
+                     position = position_dodge(width = 0.75)) +
+  ggplot2::geom_point(ggplot2::aes(group = color_group),
+                      position = position_dodge(width = 0.75)) +
+  ggplot2::geom_segment(data = hline_labels_xi,
+                        ggplot2::aes(x = x, xend = xend, y = y, yend = y, color="red"),
+                        linetype = "dashed", linewidth = 1) +
+  geom_errorbar(aes(ymin = value_Y - sd_spv_Y, 
+                    ymax = value_Y + sd_spv_Y,
+                    color = color_group))+
+  ggplot2::scale_color_manual(
+    name = "Technique",
+    values = c(
+      stats::setNames(
+        viridisLite::viridis(length(type_vals), option = "magma"),
+        paste0("type_", type_vals)
+      ),
+      "GLB"  = "green"
+    ),
+    breaks = c(paste0("type_", type_vals), "GLB"),
+    labels = c(paste0("r = ", type_vals), "GLB")
+  ) +
+  ggplot2::facet_grid(rows=ggplot2::vars(choice)) +
+  ggplot2::labs(x = expression("Confidence level ("* alpha *")"),
+                y = "Set policy value (SPV)",
+                color = "Legend") +
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
+
+ggplot2::ggsave(plot_spv_level_error_bars_Y, filename=paste0("inst/images/Level_SPV_error_bars_Y_", type,".pdf"), width = 15, height = 8)
+
+
+
+plot_spv_level_error_bars_xi <- ggplot2::ggplot(spv_data,
+                               ggplot2::aes(x = factor(level),
+                                            y= value_xi,
+                                            color = color_group)) +
+  ggplot2::geom_line(ggplot2::aes(group = color_group),
+                     position = position_dodge(width = 0.75)) +
+  ggplot2::geom_point(ggplot2::aes(group = color_group),
+                      position = position_dodge(width = 0.75)) +
+  ggplot2::geom_segment(data = hline_labels_xi,
+                        ggplot2::aes(x = x, xend = xend, y = y, yend = y, color="red"),
+                        linetype = "dashed", linewidth = 1) +
+  geom_errorbar(aes(ymin = value_xi - sd_spv_xi, 
+                    ymax = value_xi + sd_spv_xi,
+                    color = color_group))+
+  ggplot2::scale_color_manual(
+    name = "Technique",
+    values = c(
+      stats::setNames(
+        viridisLite::viridis(length(type_vals), option = "magma"),
+        paste0("type_", type_vals)
+      ),
+      "GLB"  = "green"
+    ),
+    breaks = c(paste0("type_", type_vals), "GLB"),
+    labels = c(paste0("r = ", type_vals), "GLB")
+  ) +
+  ggplot2::facet_grid(rows=ggplot2::vars(choice)) +
+  ggplot2::labs(x = expression("Confidence level ("* alpha *")"),
+                y = "Set policy value (SPV)",
+                color = "Legend") +
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
+
+ggplot2::ggsave(plot_spv_level_error_bars_xi, filename=paste0("inst/images/Level_SPV_error_bars_xi_", type,".pdf"), width = 15, height = 8)
+

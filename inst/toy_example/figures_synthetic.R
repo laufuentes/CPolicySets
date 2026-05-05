@@ -64,8 +64,11 @@ spv_data <- dplyr::bind_rows(spv_data_6000_nonrct,
 
 spv_means <- spv_data %>%
   dplyr::group_by(mechanism, level, type, size) %>%
-  dplyr::summarise(mean_spv = mean(spv, na.rm = TRUE),
-                   .groups = "drop")
+  dplyr::summarise(
+    mean_spv = mean(spv, na.rm = TRUE), 
+    sd_spv = sd(spv, na.rm = TRUE), # Calculate SD here
+    .groups = "drop"
+  )
 
 # ── Mean cardinality data  ────────────────────────────────────────────
 # n = 6000
@@ -467,3 +470,39 @@ plot_sythetic_scenario <- ggplot2::ggplot(df, ggplot2::aes(x = x, y = y,
 ggplot2::ggsave(plot_sythetic_scenario, 
                 filename=paste0("inst/images/Synthetic_data_", type,".pdf"), 
                 width = 10, height = 6)
+
+plot_spv_level_error_bars <- ggplot2::ggplot(plot_data,
+                                  ggplot2::aes(x = level, y = mean_spv)) +
+  ggplot2::geom_line(ggplot2::aes(group = interaction(mechanism, type), 
+                                  color = color_group), alpha = 0.7) +
+  ggplot2::geom_point(aes(color = color_group),
+                      alpha = 0.5) +
+  geom_errorbar(aes(ymin = mean_spv - sd_spv, 
+                    ymax = mean_spv + sd_spv,
+                    color = color_group))+
+  ggplot2::geom_segment(
+    data = hline_labels,
+    ggplot2::aes(x = x, xend = xend, y = y, yend = y),
+    color = "gray", linetype = "dashed", linewidth = 1) +
+  ggplot2::scale_color_manual(
+    name = "Technique",
+    values = c(
+      stats::setNames(
+        viridisLite::viridis(length(type_vals), option = "magma"),
+        paste0("type_", type_vals)
+      ),
+      "Oracular CP" = "blue",
+      "GLB"  = "green"
+    ),
+    breaks = c(paste0("type_", type_vals), "Oracular CP", "GLB"),
+    labels = c(paste0("r = ", type_vals), "Oracular CP", "GLB")) +
+  ggplot2::scale_size_continuous(name = "Mean width",
+                                 range = c(0.1, 2)) +
+  ggplot2::facet_grid(~size) +
+  ggplot2::labs(x = expression("Confidence level (" * alpha * ")"),
+                y = "Set Policy Value (SPV)")+ 
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 16),
+    legend.title = ggplot2::element_text(size = 16), 
+    legend.text = ggplot2::element_text(size = 14))
+ggplot2::ggsave(plot_spv_level_error_bars, filename=paste0("inst/images/Level_SPV_error_bars", type,".pdf"), width = 15, height = 8)
