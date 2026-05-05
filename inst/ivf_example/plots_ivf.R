@@ -207,7 +207,7 @@ spv_data_xi <- dplyr::bind_rows(
   make_block(1, "Unweighted", results[["spv_xi_min"]], alphas, random_rate) %>%
     dplyr::rename(value_xi = value) %>%
     dplyr::mutate(choice="Lowest"),
-  purrr:map_dfr(1:dim(results[["spv_xi_min"]])[1], function(a) {
+  purrr::map_dfr(1:dim(results[["spv_xi_min"]])[1], function(a) {
   data.frame(
     value_xi = results[["spv_xi_min"]][a, ,2,1],
     mechanism = "GLB",
