@@ -439,7 +439,7 @@ for (t in 1:dim(heatmaps_r)[5]){
         dplyr::mutate(row_id = dplyr::row_number()) %>%
         tidyr::pivot_longer(cols = -row_id, names_to = "column_m", 
                             values_to = "value")
-      plots[[r]] <- ggplot2::ggplot(file, 
+      p <- ggplot2::ggplot(file, 
                                     ggplot2::aes(x = column_m, y = row_id, 
                                                  fill = factor(value))) +
         ggplot2::geom_tile() +
@@ -452,7 +452,12 @@ for (t in 1:dim(heatmaps_r)[5]){
           axis.title = ggplot2::element_text(size = 16),
           legend.title = ggplot2::element_text(size = 16), 
           legend.text = ggplot2::element_text(size = 14))
-    }
+      
+      if (r != 7) {
+        p <- p + ggplot2::theme(legend.position = "none")
+      }
+      plots[[r]] <- p
+      }
     plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = dim(heatmaps_r)[4], top = paste0("Alpha = ", alphas[i]))
   }
   multi_page <- gridExtra::marrangeGrob(grobs = plots_completed, nrow = 1, ncol = 1)
