@@ -27,9 +27,9 @@ density_plot <- ggplot2::ggplot(SL.out$data_toghether,
                 color = "Type of labels",
                 linetype = "Score Type")+#+gganimate::ease_aes('linear')
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(density_plot,
                 filename=paste0("inst/images/density_",type,".pdf"),
@@ -52,9 +52,9 @@ ecdf_plot <- ggplot2::ggplot(SL.out$data_toghether,
   ) +
   ggplot2::labs(y = "ECDF", x = "Value")+
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(ecdf_plot,
                 filename=paste0("inst/images/ecdf_",type,".pdf"),
@@ -306,9 +306,9 @@ spv_plot <- ggplot2::ggplot(spv_data,
                 y = "Set policy value (SPV)",
                 color = "Legend") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(spv_plot,
                 filename=paste0("inst/images/spv_plot_Y_",type,".pdf"),
@@ -348,9 +348,9 @@ spv_plot_xi <- ggplot2::ggplot(spv_data,
                 y = "Set policy value (SPV)",
                 color = "Legend") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(spv_plot_xi,
                 filename=paste0("inst/images/spv_plot_xi_",type,".pdf"),
@@ -363,8 +363,8 @@ spv_Y_xi_plot <- ggplot2::ggplot(spv_data %>% filter(level==level_choice),
                                          y= value_xi,
                                          color = color_group,
                                          group=color_group)) +
-  ggplot2::geom_point(aes(shape=choice), size=5) +
-  ggplot2::geom_line(aes(group=color_group))+
+  ggplot2::geom_point(aes(shape=choice), size=7) +
+  ggplot2::geom_line(aes(group=color_group), linewith=1.5)+
   ggplot2::scale_color_manual(
     name = "Technique",
     values = c(
@@ -381,9 +381,9 @@ spv_Y_xi_plot <- ggplot2::ggplot(spv_data %>% filter(level==level_choice),
                 y = expression("Set policy value ("* xi *")"),
                 color = "Legend") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(spv_Y_xi_plot,
                 filename=paste0("inst/images/spv_plot_Yxi_",type,".pdf"),
@@ -415,9 +415,9 @@ mean_cardinality_plot <- ggplot2::ggplot(data=mean_cardinality_data,
   ggplot2::labs(x = expression("Confidence level ("* alpha *")"),
                 y = "Mean cardinality") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(mean_cardinality_plot,
                 filename=paste0("inst/images/width_boxplots_", type, ".pdf"),
@@ -449,9 +449,9 @@ for (t in 1:dim(heatmaps_r)[5]){
              y = "Observations",
              fill = "Present")+ 
         ggplot2::theme(
-          axis.title = ggplot2::element_text(size = 16),
-          legend.title = ggplot2::element_text(size = 16), 
-          legend.text = ggplot2::element_text(size = 14))
+          axis.title = ggplot2::element_text(size = 18),
+          legend.title = ggplot2::element_text(size = 18), 
+          legend.text = ggplot2::element_text(size = 16))
       
       if (r != 7) {
         p <- p + ggplot2::theme(legend.position = "none")
@@ -468,13 +468,13 @@ for (t in 1:dim(heatmaps_r)[5]){
 
 plot_spv_level_error_bars_Y <- ggplot2::ggplot(spv_data,
                                                 ggplot2::aes(x = factor(level),
-                                                             y= value_Y,
+                                                             y = value_Y,
                                                              color = color_group)) +
   ggplot2::geom_line(ggplot2::aes(group = color_group),
                      position = position_dodge(width = 0.75)) +
   ggplot2::geom_point(ggplot2::aes(group = color_group),
                       position = position_dodge(width = 0.75)) +
-  ggplot2::geom_segment(data = hline_labels_xi,
+  ggplot2::geom_segment(data = hline_labels,
                         ggplot2::aes(x = x, xend = xend, y = y, yend = y, color="red"),
                         linetype = "dashed", linewidth = 1) +
   geom_errorbar(aes(ymin = value_Y - sd_spv_Y, 
@@ -497,9 +497,9 @@ plot_spv_level_error_bars_Y <- ggplot2::ggplot(spv_data,
                 y = "Set policy value (SPV)",
                 color = "Legend") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(plot_spv_level_error_bars_Y, filename=paste0("inst/images/Level_SPV_error_bars_Y_", type,".pdf"), width = 15, height = 8)
 
@@ -514,7 +514,8 @@ plot_spv_level_error_bars_xi <- ggplot2::ggplot(spv_data,
   ggplot2::geom_point(ggplot2::aes(group = color_group),
                       position = position_dodge(width = 0.75)) +
   ggplot2::geom_segment(data = hline_labels_xi,
-                        ggplot2::aes(x = x, xend = xend, y = y, yend = y, color="red"),
+                        ggplot2::aes(x = x, xend = xend, y = y, yend = y, 
+                                     color="red"),
                         linetype = "dashed", linewidth = 1) +
   geom_errorbar(aes(ymin = value_xi - sd_spv_xi, 
                     ymax = value_xi + sd_spv_xi,
@@ -536,9 +537,9 @@ plot_spv_level_error_bars_xi <- ggplot2::ggplot(spv_data,
                 y = "Set policy value (SPV)",
                 color = "Legend") +
   ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 16),
-    legend.title = ggplot2::element_text(size = 16), 
-    legend.text = ggplot2::element_text(size = 14))
+    axis.title = ggplot2::element_text(size = 18),
+    legend.title = ggplot2::element_text(size = 18), 
+    legend.text = ggplot2::element_text(size = 16))
 
 ggplot2::ggsave(plot_spv_level_error_bars_xi, filename=paste0("inst/images/Level_SPV_error_bars_xi_", type,".pdf"), width = 15, height = 8)
 
