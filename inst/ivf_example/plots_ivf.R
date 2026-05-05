@@ -460,7 +460,7 @@ for (t in 1:dim(heatmaps_r)[5]){
       plots[[j]] <- p
       j <- j + 1
       }
-    plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = dim(heatmaps_r)[4], top = paste0("Alpha = ", alphas[i]))
+    plots_completed[[i]] <- gridExtra::arrangeGrob(grobs = plots, nrow = 1, ncol = 3, top = paste0("Alpha = ", alphas[i]))
   }
   multi_page <- gridExtra::marrangeGrob(grobs = plots_completed, nrow = 1, ncol = 1)
   ggplot2::ggsave(
