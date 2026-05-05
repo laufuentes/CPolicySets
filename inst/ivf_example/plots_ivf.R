@@ -444,7 +444,7 @@ for (t in 1:dim(heatmaps_r)[5]){
                                                  fill = factor(value))) +
         ggplot2::geom_tile() +
         ggplot2::theme_minimal() +
-        ggplot2::labs(title = paste0("r: ", random_rate[r]),
+        ggplot2::labs(title = paste0("r= ", random_rate[r]),
              x = "Treatment levels",
              y = "Observations",
              fill = "Present")+ 
