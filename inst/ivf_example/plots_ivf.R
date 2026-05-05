@@ -431,7 +431,7 @@ for (t in 1:dim(heatmaps_r)[5]){
   plots_completed <- list()
   for (i in 1:dim(heatmaps_r)[3]){
     plots <- list()
-    for (r in 1:c(1,4,7)){
+    for (r in c(1,4,7)){
       colnames(heatmaps_r[,,i,r,t]) <- levels_A
       file <- as.data.frame(heatmaps_r[,,i,r,t]) 
       colnames(file) <- levels_A
